@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D RR-NS String-String Interaction Visualizer</title>
+    <meta name="description" content="An interactive 3D simulation of two strings meeting at a shared endpoint inside a rotatable 3-brane volume, with a fixed 2D double-circle inset overlay.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <div class="app-container">
+        <!-- Main Panel with Canvas -->
+        <main class="viewport">
+            <header class="app-header">
+                <div class="header-text">
+                    <h1>RR-NS String-String Interaction</h1>
+                    <p class="subtitle">Shared 3D Endpoint inside 𝔅₃-Brane Volume</p>
+                </div>
+                <div class="app-badge">
+                    <span class="badge-dot"></span>
+                    <span class="badge-text">3D Simulation</span>
+                </div>
+            </header>
+            
+            <div class="canvas-container">
+                <canvas id="canvas-3d"></canvas>
+                
+                <div class="canvas-overlay">
+                    <span class="overlay-tag">Linked 3D Strings Space</span>
+                    <span class="overlay-tip">🖱️ Click &amp; drag to rotate | Scroll to zoom</span>
+                </div>
+                
+                <!-- Fixed 2D Circle Inset Overlay (Wider for Double Circle) -->
+                <div class="inset-pane double">
+                    <span class="inset-tag">2D Circle Boundary Windows</span>
+                    <canvas id="canvas-circle-inset" class="double"></canvas>
+                </div>
+            </div>
+
+            <!-- Mathematical metrics readout -->
+            <div class="math-readout-grid">
+                <div class="readout-card">
+                    <div class="math-label">Couplings (κ₁, κ₂)</div>
+                    <div class="math-value"><span id="val-kappa1">2.500</span> | <span id="val-kappa2">2.500</span></div>
+                    <div class="math-formula">κ<sub>i</sub> = ∫<sub>𝔒<sub>i</sub></sub> Tr(C<sub>(1)</sub>)</div>
+                </div>
+                <div class="readout-card">
+                    <div class="math-label">NS Field Strength (B<sub>(2)</sub>)</div>
+                    <div class="math-value" id="val-ns-field">1.500</div>
+                    <div class="math-formula">B<sub>(2)</sub> = d C<sub>(1)</sub> ∧ Tr(C<sub>(1)</sub>)</div>
+                </div>
+                <div class="readout-card">
+                    <div class="math-label">Shared Fluctuation (σ²)</div>
+                    <div class="math-value" id="val-variance">0.024</div>
+                    <div class="math-formula">σ² ∝ B<sub>(2)</sub> · (κ₁ + κ₂)⁻¹</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar Panel for Controls & Info -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon"></div>
+                <h2>RR-NS Sim</h2>
+            </div>
+
+            <!-- Mode Switcher Navigation -->
+            <nav class="mode-selector">
+                <a href="index.html" class="mode-btn">⭕ String-Brane View</a>
+                <a href="string_string.html" class="mode-btn active">⛓️ String-String View</a>
+            </nav>
+            
+            <div class="control-panel">
+                <h3>String-String Controls</h3>
+
+                <!-- String 1 (Left) Subpanel -->
+                <div class="sub-panel-title left">String 1 (Left Boundary)</div>
+                
+                <div class="control-group">
+                    <label for="slider-window-size">Window 1 Width (θ<sub>window,1</sub>)</label>
+                    <input type="range" id="slider-window-size" min="10" max="180" value="90">
+                    <div class="value-readout">Width 1: <span id="val-window-size">90</span>°</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="slider-rr-charge">RR Charge 1 (Tr C<sub>(1),1</sub>)</label>
+                    <input type="range" id="slider-rr-charge" min="5" max="100" value="40">
+                    <div class="value-readout">Intensity 1: <span id="val-rr-raw">4.0</span></div>
+                </div>
+
+                <!-- String 2 (Right) Subpanel -->
+                <div class="sub-panel-title right">String 2 (Right Boundary)</div>
+                
+                <div class="control-group">
+                    <label for="slider-window-size-2">Window 2 Width (θ<sub>window,2</sub>)</label>
+                    <input type="range" id="slider-window-size-2" min="10" max="180" value="90">
+                    <div class="value-readout">Width 2: <span id="val-window-size-2">90</span>°</div>
+                </div>
+                
+                <div class="control-group">
+                    <label for="slider-rr-charge-2">RR Charge 2 (Tr C<sub>(1),2</sub>)</label>
+                    <input type="range" id="slider-rr-charge-2" min="5" max="100" value="40">
+                    <div class="value-readout">Intensity 2: <span id="val-rr-raw-2">4.0</span></div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-light); margin: 5px 0;">
+
+                <!-- Shared parameters -->
+                <div class="control-group">
+                    <label for="slider-ns-field">NS Field (B<sub>(2)</sub> Fluctuations)</label>
+                    <input type="range" id="slider-ns-field" min="0" max="100" value="50">
+                    <div class="value-readout">Fluctuations: <span id="val-ns-raw">5.0</span></div>
+                </div>
+
+                <div class="control-group">
+                    <label for="slider-zoom">Camera Zoom</label>
+                    <input type="range" id="slider-zoom" min="5" max="40" value="15">
+                    <div class="value-readout">Zoom: <span id="val-zoom">1.5</span>x</div>
+                </div>
+            </div>
+
+            <!-- Mathematical brief explaining the visualization -->
+            <div class="theory-box">
+                <h4>String-String Geometry</h4>
+                <p>String 1 stretches from the Left Circle Window ($x=-70$) and String 2 stretches from the Right Circle Window ($x=+70$). Both connect at a shared endpoint inside the central D3-brane box ($x=0$).</p>
+                
+                <h4>Shared Endpoint Stabilisation</h4>
+                <p>The shared endpoint coordinates fluctuate due to the NS field. The variance is stabilized by the couplings of BOTH strings: $\sigma^2 \propto B_{(2)} / (\kappa_1 + \kappa_2)$. If either RR charge is turned up, its string stabilizes the endpoint on that side.</p>
+            </div>
+        </aside>
+    </div>
+    
+    <script src="sim_string.js"></script>
+</body>
+</html>

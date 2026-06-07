@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D RR-NS String-Brane Interaction Visualizer</title>
+    <meta name="description" content="An interactive 3D simulation of a string terminating inside a rotatable 3-brane, with a fixed 2D picture-in-picture circle inset showing window charge concentration.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <div class="app-container">
+        <!-- Main Panel with Canvas -->
+        <main class="viewport">
+            <header class="app-header">
+                <div class="header-text">
+                    <h1>RR-NS String-Brane Interaction</h1>
+                    <p class="subtitle">Fully Rotatable 3D Space with Fixed 2D Circle Inset</p>
+                </div>
+                <div class="app-badge">
+                    <span class="badge-dot"></span>
+                    <span class="badge-text">3D Simulation</span>
+                </div>
+            </header>
+            
+            <div class="canvas-container">
+                <canvas id="canvas-3d"></canvas>
+                
+                <div class="canvas-overlay">
+                    <span class="overlay-tag">𝔅₃-Brane Coordinate Space</span>
+                    <span class="overlay-tip">🖱️ Click &amp; drag to rotate | Scroll to zoom</span>
+                </div>
+                
+                <!-- Fixed 2D Circle Inset Overlay -->
+                <div class="inset-pane">
+                    <span class="inset-tag">2D Circle Space 𝔒</span>
+                    <canvas id="canvas-circle-inset"></canvas>
+                </div>
+            </div>
+
+            <!-- Mathematical metrics readout -->
+            <div class="math-readout-grid">
+                <div class="readout-card">
+                    <div class="math-label">Coupling Strength (κ)</div>
+                    <div class="math-value" id="val-kappa">2.500</div>
+                    <div class="math-formula">κ = ∫<sub>𝔒</sub> Tr(C<sub>(1)</sub>)</div>
+                </div>
+                <div class="readout-card">
+                    <div class="math-label">NS Field Strength (B<sub>(2)</sub>)</div>
+                    <div class="math-value" id="val-ns-field">1.500</div>
+                    <div class="math-formula">B<sub>(2)</sub> = d C<sub>(1)</sub> ∧ Tr(C<sub>(1)</sub>)</div>
+                </div>
+                <div class="readout-card">
+                    <div class="math-label">Fluctuation Variance (σ²)</div>
+                    <div class="math-value" id="val-variance">0.024</div>
+                    <div class="math-formula">σ² ∝ B<sub>(2)</sub> · κ⁻¹</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Sidebar Panel for Controls & Info -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon"></div>
+                <h2>RR-NS Sim</h2>
+            </div>
+
+            <!-- Mode Switcher Navigation -->
+            <nav class="mode-selector">
+                <a href="index.html" class="mode-btn active">⭕ String-Brane View</a>
+                <a href="string_string.html" class="mode-btn">⛓️ String-String View</a>
+            </nav>
+            
+            <div class="control-panel">
+                <h3>Simulation Controls</h3>
+
+                <div class="control-group">
+                    <label for="slider-window-size">Window Angle Width (θ<sub>window</sub>)</label>
+                    <input type="range" id="slider-window-size" min="10" max="180" value="90">
+                    <div class="value-readout">Width: <span id="val-window-size">90</span>°</div>
+                    <p class="slider-hint">Controls the size of the highlighted window arc on the fixed 2D circle inset pane.</p>
+                </div>
+                
+                <div class="control-group">
+                    <label for="slider-rr-charge">RR Charge Intensity (Tr C<sub>(1)</sub>)</label>
+                    <input type="range" id="slider-rr-charge" min="5" max="100" value="40">
+                    <div class="value-readout">Intensity: <span id="val-rr-raw">4.0</span></div>
+                    <p class="slider-hint">Increases RR charge at the window, accelerating string decay (color attenuation) and stabilizing fluctuations.</p>
+                </div>
+                
+                <div class="control-group">
+                    <label for="slider-ns-field">NS Field (B<sub>(2)</sub> Fluctuations)</label>
+                    <input type="range" id="slider-ns-field" min="0" max="100" value="50">
+                    <div class="value-readout">Fluctuations: <span id="val-ns-raw">5.0</span></div>
+                    <p class="slider-hint">Modifies the 3-dimensional coordinate fluctuations of the string inside the rotatable 𝔅₃-brane.</p>
+                </div>
+
+                <div class="control-group">
+                    <label for="slider-zoom">Camera Zoom</label>
+                    <input type="range" id="slider-zoom" min="5" max="40" value="15">
+                    <div class="value-readout">Zoom: <span id="val-zoom">1.5</span>x</div>
+                    <p class="slider-hint">Controls the scaling of the 3D projection viewport. You can also scroll on the canvas to zoom in and out.</p>
+                </div>
+            </div>
+
+            <!-- Mathematical brief explaining the visualization -->
+            <div class="theory-box">
+                <h4>Choropleth Color Map</h4>
+                <p>The string is colored by a gradient representing local RR potential density. It is highly intense (glowing cyan) at the circle window, attenuating as it approaches the 3D 𝔅₃-brane.</p>
+                
+                <h4>Endpoint Fluctuations</h4>
+                <p>Consistent with $S_B[\Sigma] = \int B_{(2)}$, the string ends inside the 𝔅₃-brane volume, undergoing stochastic vibrations whose amplitude $\sigma^2$ is boosted by $B_{(2)}$ and stabilized by the coupling $\kappa$.</p>
+            </div>
+        </aside>
+    </div>
+    
+    <script src="sim.js"></script>
+</body>
+</html>
