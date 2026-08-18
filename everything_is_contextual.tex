@@ -1,0 +1,560 @@
+\documentclass{article}
+
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{babel}
+\usepackage{stackengine}
+\usepackage{tikz}
+\usepackage{tikz-cd}
+\usepackage{quiver}
+\usepackage{mathrsfs}
+\usepackage{braket}
+\usepackage{float}
+\usepackage{scalerel}
+\usepackage{stackengine,wasysym}
+\usepackage{blindtext}
+\usepackage[final]{hyperref}
+\usepackage{bbold}
+\usepackage{geometry}
+\usepackage{cancel}
+\usepackage{booktabs}
+\usepackage{comment}
+
+\title{Everything is Contextual: \\ Contextuality Beyond Quantum}
+\author{Ryan J. Buchanan\footnote{Active Inference Institute; ORCiD: \href{https://orcid.org/
+			0009-0000-1253-0031}{	0009-0000-1253-0031}}}
+\date{August, 2026}
+
+\newtheorem{war}{Warning}
+\newtheorem{dn}{Definition}
+\newtheorem{as}{Assumption}
+\newtheorem{rk}{Remark}
+\newtheorem{eg}{Example}
+\newtheorem{pp}{Proposition}
+\newtheorem{ax}{Axiom}
+\newtheorem{tm}{Theorem}
+\newtheorem{lem}{Lemma}
+\newtheorem{nt}{Notation}
+\newtheorem{prop}{Property}
+\newtheorem{rc}{Recollection}
+\newtheorem{exc}{Exercise}
+
+
+\numberwithin{tm}{section}
+\numberwithin{dn}{section}
+\numberwithin{as}{section}
+\numberwithin{rk}{section}
+\numberwithin{lem}{section}
+\numberwithin{ax}{section}
+\numberwithin{pp}{section}
+\numberwithin{eg}{section}
+\numberwithin{war}{section}
+\numberwithin{equation}{section}
+\numberwithin{prop}{section}
+\numberwithin{nt}{section}
+\numberwithin{rc}{section}
+
+
+\newcommand\restr[2]{{% we make the whole thing an ordinary symbol
+		\left.\kern-\nulldelimiterspace % automatically resize the bar with \right
+		#1 % the function
+		\littletaller % pretend it's a little taller at normal size
+		\right|_{#2} % this is the delimiter
+}}
+
+\def\code#1{\texttt{#1}}
+
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+	Contextuality has become a cornerstone of modern foundational approaches to quantum physics. This paper introduces \emph{contextual mathematics} (CM), a general framework designed to formalize epistemic contextuality beyond physics. By modeling contexts categorically via the category of contexts $\mathbf{Ctx}$ and observations as contravariant bifunctors, we show that the Kochen--Specker theorem naturally arises from the impossibility of finding a universal synonymizer for distinct agent channels. We further develop the sheaf-theoretic and homological structures of local evaluations, establishing that quantum contextuality corresponds to non-trivial extension classes ($\text{Ext}^1 \neq 0$) and non-vanishing Čech cohomology. Finally, we demonstrate the utility of CM by applying these categorical tools to algebraic quantum field theory (AQFT) over globally hyperbolic spacetimes, bridging device-dependent time-cutoffs, deformation quantization obstructions, and microcausality.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+Contextuality has emerged as one of the cornerstones of modern foundational approaches to quantum physics \cite{abramsky, dunne}. As an active and intense area of research, it has recently been numerically tested \cite{Fabbrichesi} at high energies and applied to error-correcting codes \cite{Khu}, and less recently was shown to be vital to quantum computation \cite{Howard}. It is also a beautiful subect mathematically, invoking topics like ``spectral presheaves" \cite{cannon, dunne} and topos theory \cite{cannon} which were long relegated to the annals of pure mathematics.
+
+This paper aims to build on these developments by showcasing a more general mathematics -- \emph{contextual mathematics} (CM) -- that reproduces these results. We consider contexts abstractly (see Definition~\ref{dn:contexts}), with the motivation to go beyond physics and describe epistemic contextuality more generally. The Kochen--Specker theorem naturally arises as the result that, in general, there is no pair of ``trivial contexts" that form a universal synonymizer.\footnote{For the definition of synonymity, skip to Definition~\ref{Synonyms}.} By constructing synonyms as \emph{pairs of contexts} whose evaluation by agents/measuring devices $\code{A}$ and $\code{B}$ yield isomorphic results, we are able to exploit the very elementary fact of algebra, that the multiplicative identity must be unique, to prove this.
+
+Such a focus on the most general and basic elements of algebra and category theory makes CM a robust framework for abstractly unifying many very concrete problems.\footnote{The fact that our superscripts $\code{A}$ and $\code{B}$ represent generalized ``channels" goes a long way in making the theory universal; for instance, they could represent measuring devices or agents, which already addresses modern physics, active inference and cognitive science, and artificial intelligence!} In the rest of this section, we will introduce our preliminary definitions and the category $\mathbf{Ctx}$ of contexts, proving a simple result about synonymization along the way. In \S\ref{sheaf}, we explain how the sheafy aspects of contextuality arising from our theory are consistent with the traditional quantum contextuality. In \S\label{kan}, it is shown how these results are to be viewed as Kan extensions. Finally, in \S\ref{Spacetime}, we discuss an application of CM to algebraic quantum field theory (AQFT), in order to demonstrate its utility.
+
+Taken altogether, this paper represents a significant advancement in the author's earlier work with Monroe \cite{buchanan}, in which Grothendieck universes were used to construct a context--dependent logic. In the present work, Grothendieck universes are supplemented by Grothendieck topologies on the contexts themselves (see the recollections in \S\ref{Groth}). In addition, the category $\mathcal{O}$ (our ``ontic category") is kept intentionally vague so that it may be specialized as needed. In \S\ref{Spacetime}, we use it to construct the convex category $\mathbf{Conv}$, which was used to construct the proof of Theorem 1.1 in \S2.2.1 of \cite{buchanan}.
+
+\subsection{Preliminary Definitions} \label{Prelim}
+Let $\code{C}$ and $\code{D}$ denote two contexts, which we will leave undefined for now. Define a category $\mathcal{O}$, called the ``ontic category," whose objects $o \in \mathcal{O}$ we shall just call $\mathcal{O}$-objects, and whose morphisms are undefined.\footnote{Later, in \S\ref{Spacetime}, we will replace this category with one where the morphisms \emph{are} defined. In many cases it will be useful to do so, so as to make sure functoriality works as usual, but here we refrain from doing so, because it is not philosophically clear what they should be.} Define a second category $\mathcal{E}$, the ``epistemic category," and for every collection $\mathcal{O}_i \in \mathcal{O}$, let us assume abstractly that there is some map
+$$\varphi: \mathcal{O} \longrightarrow \mathcal{E}$$
+given by $\varphi(\mathcal{O}_i) = \mathcal{E}_i$.
+
+\medskip
+The following axiom:
+\begin{ax} [Subscript Invariance] \label{subinv}
+	$\forall \varphi \forall i \quad \varphi_i(\mathcal{O}) \coloneq \varphi(\mathcal{O}_i)$
+\end{ax}
+would lead to a lot of beautiful results being trivially true. Such a subscript $i$ which satisfies this axiom is so important that it motivates the entire paper: it shall be called a \emph{context}, and from now on we will denote them in code-font: e.g, $\code{a}, \code{b},$ etcetera. 
+
+\begin{dn} \label{dn:contexts}
+	A context $\code{c}$ is any character or string which specifies the precise case in which an object $o$ is considered by creating a conditional branching in which $o_\code{c} = k$ does not imply that $o_\code{d} = k$ for $\code{c} \neq \code{d}$.
+\end{dn}
+
+\begin{eg}
+	Let $\code{A}$ and $\code{B}$ be two separate people, and $\mathbf{p}$ be any proposition with referent $\mathcal{O}_i$. Then:
+	\begin{equation}
+		\mathbf{p}^\code{A}(\mathcal{O}_\code{i}) = \mathbf{p}^\code{B}(\mathcal{O}_\code{i})
+	\end{equation}
+	implies that the two are in agreement.
+\end{eg}
+Notice that we have used a superscripted context here. This is to be interpreted as saying that the ontic ``fact" $\mathcal{O}_i$ is being specialized to the context of the agent. Let us assume that $\mathbf{p}$ is an instantiation of $\varphi$, and let us denote this by $\mathbf{p} \Vdash \varphi$. Then, we could equivalently write this equation as:
+\begin{equation}
+	\varphi_{\code{i}}^\code{A}(\mathcal{O}) = \varphi_{\code{i}}^\code{B}(\mathcal{O}) .
+\end{equation}
+and we shall refer to the entire terms on the left- or right-hand-sides as ``$\mathcal{O}$-evaluations." For an arbitrary category $\mathcal{C}$, we shall call them $\mathcal{C}$-evaluations, or just evaluations when it is obvious. 
+
+\begin{dn}
+	A context $\varphi^\code{A}$ written as a superscript shall be called a \emph{channel}.
+\end{dn}
+
+In order to keep our notation clean, let's impose the following:
+\begin{ax} [Channel Axiom] \label{Channel}
+	\begin{itemize}
+		
+		\item $\varphi^\code{A}(\mathcal{O}_\code{i}) \equiv \varphi(\mathcal{O}_{\code{A} \circ \code{i}})$
+		
+		\item Channels cannot be applied to arguments of a function unless they themselves are functions.
+	\end{itemize}
+\end{ax}
+and now it is clear that the agent channel is basically a filter that is applied after the original context. 
+
+\begin{dn} [Synonyms] \label{Synonyms}
+	Let $\mathbf{A} \coloneq \varphi_{\code{i}}^\code{A}$ and $\mathbf{B} \coloneq \varphi_{\code{j}}^\code{B}$ be equivalent when $i \neq j$. Such a pair of evaluations with differing channels and contexts, which are still equivalent, shall be called \emph{synonyms} and denoted $\mathbf{A} \cong \mathbf{B}$. We shall say $\mathbf{A}$ is \emph{synonymous with} $\mathbf{B}$, and the pair of contexts $(\code{i}, \code{j})$ giving rise to the equivalence shall be called the \emph{synonymizer} of $\varphi^\code{A}$ and $\varphi^\code{B}$.
+\end{dn}
+
+Notice the following.
+\begin{eg}
+	Let $f: X \to X$ be the identity function. Applying $f$ twice, one for agent $\code{A}$ and one for agent $\code{B}$, yields:
+	\begin{equation}
+		f_j^\code{B}(f^\code{A}(\mathcal{O}_\code{i})) = f(f(\mathcal{O}_{(\code{B} \circ \code{j}) \circ (\code{A} \circ \code{i})})) = \mathrm{Id}_{\mathcal{O}_{(\code{B} \circ \code{j}) \circ (\code{A} \circ \code{i})}} ;
+	\end{equation}
+	notice, that due to the application of contexts, this is not necessarily the identity on $\mathcal{O}$ unless $\code{B} \circ \code{j} = (\code{A} \circ \code{i})^{-1}$ is a synonymizer for the identity context $\code{I}$.
+\end{eg}
+In particular, by Definition~\ref{dn:contexts}, since $f_\code{i}$ does not have to equal $f_\code{j}$ in general, the contextual identity does not have to yield an on-the-nose equivalence. To find an identity which \emph{does} behave classically, we look for two contexts $\code{i}$ and $\code{j}$ such that:
+\begin{equation}
+	f_\code{i}^\code{A}(\mathcal{O}) \equiv f_\code{j}^\code{B}(\mathcal{O})
+\end{equation}
+for \emph{every} pair of agents $(\code{A}, \code{B})$. If we let $\code{i}$ and $\code{j}$ be the \emph{trivial contexts}:
+$$\mathcal{O}_\code{i} \equiv \mathcal{O} \equiv \mathcal{O}_\code{j}$$
+then we recover the classical identity; but, notice that this applies globally to the entire category $\mathcal{O}$. In general, the identity does not have to hold locally for subcategories of $\mathcal{O}$, since we have established that these subcategories are given by applying a context (as in $\mathcal{O}_\code{c}$), and in general evaluations by different agents are not required to yield the same result.
+
+Categorically, the synonymizer $(\code{i}, \code{j})$ identifies the exact sub-context where the two localized channels equalize. If we view the channels $\varphi_{\code{i}}^\code{A}$ and $\varphi_{\code{j}}^\code{B}$ as parallel evaluation morphisms from the ontic category $\mathcal{O}$ to the epistemic category $\mathcal{E}$, their agreement forms an equalizer diagram:
+\begin{equation}
+	\begin{tikzcd}
+		\mathrm{Syn}(\code{A}, \code{B}) \arrow[r, "e"] & \mathcal{O} \arrow[r, "\varphi_{\code{i}}^\code{A}" shift left=1.5ex] \arrow[r, "\varphi_{\code{j}}^\code{B}"' shift right=1ex] & \mathcal{E}
+	\end{tikzcd}
+\end{equation}
+where $\mathrm{Syn}(\code{A}, \code{B})$ is the maximal subcategory (or restricted ontic domain) over which the agents perfectly agree. When this equalizer encompasses the entirety of $\mathcal{O}$, the contextual divergence vanishes, recovering the non-contextual, ``trivial context.'' This precipitates the sheaf gluing condition in \S\ref{sheaf}.
+
+\subsection{The Category of Contexts ($\mathbf{Ctx})$}
+We are now ready to define the category $\mathbf{Ctx}$ of contexts.
+%%todo: generalize this 
+\begin{dn}
+	Let $\mathbf{Ctx}$ be the category where:
+	\begin{itemize}
+		\item Objects are contexts $\code{c}, \code{d}, \dots$
+		\item Morphisms $\kappa: \code{c} \to \code{d}$ represent \emph{context refinements} or \emph{parameter injections} (i.e., $\code{d}$ provides at least as fine-grained a context as $\code{c}$).
+	\end{itemize}
+\end{dn}
+With this established, observation is now viewed as a \emph{bifunctor}:
+$$\Phi: \mathbf{Ctx}^{\text{op}} \times \mathcal{O} \longrightarrow \mathcal{E}$$
+where context refinement acts contravariantly. Refinements $\kappa: \code{c} \to \code{d}$ induces restriction morphisms $\Phi(\kappa, 1_\mathcal{O}): \varphi_{\code{d}}(\mathcal{O}) \to \varphi_{\code{c}}(\mathcal{O})$ in $\mathcal{E}$. 	In sheaf-theoretic terms, $\Phi(\kappa, 1_\mathcal{O})$ is a \emph{restriction map} $\rho_{\code{d},\code{c}}$: an evaluation in the finer context $\code{d}$ carries full information about all parameters in $P(\code{d})$,
+while acting as a forgetful operation, marginalizing away the extra parameters in $P(\code{d}) \setminus P(\code{c})$ to return an evaluation valid in the coarser context $\code{c}$.
+\begin{pp}
+	Let $\mathbf{A} \coloneq \varphi_{\code{i}}^\code{A}(\mathcal{O})$ and $\mathbf{B} \coloneq \varphi_{\code{j}}^\code{B}(\mathcal{O})$ be synonymous $\mathcal{O}$-evaluations ($\mathbf{A} \cong \mathbf{B}$). Then there exists a mediating fine context $\code{k} \in \mathbf{Ctx}$ with refinements $\kappa_i: \code{i} \to \code{k}$ and $\kappa_j: \code{j} \to \code{k}$ such that the restriction maps $\Phi(\kappa_i, 1_\mathcal{O})$ and $\Phi(\kappa_j, 1_\mathcal{O})$ satisfy:
+	\[
+	\Phi(\kappa_i, 1_\mathcal{O})\left(\varphi_{\code{k}}(\mathcal{O})\right) \;\cong\; \Phi(\kappa_j, 1_\mathcal{O})\left(\varphi_{\code{k}}(\mathcal{O})\right) \;\cong\; \mathbf{A} \;\cong\; \mathbf{B}
+	\]
+	in $\mathcal{E}$. In particular, if a direct refinement $\kappa: \code{i} \to \code{j}$ exists between synonymous contexts, the restriction map $\Phi(\kappa, 1_\mathcal{O}): \varphi_{\code{j}}(\mathcal{O}) \to \varphi_{\code{i}}(\mathcal{O})$ is an isomorphism in $\mathcal{E}$.
+\end{pp}
+
+\begin{eg}[Coarse vs.\ Fine Contexts]
+	Consider two observational contexts for a physical system:
+	\begin{itemize}
+		\item \textbf{Coarse Context ($\code{c}$):} $P(\code{c}) = \{\text{Temperature}\}$.
+		\item \textbf{Fine Context ($\code{d}$):} $P(\code{d}) = \{\text{Temperature}, \text{Pressure}, \text{Humidity}\}$.
+	\end{itemize}
+	The canonical inclusion $\kappa: \code{c} \to \code{d}$ embeds $P(\code{c}) \hookrightarrow P(\code{d})$.
+\end{eg}
+
+Immediately, we can conclude the following:
+\begin{proof}
+	By Definition~\ref{Synonyms}, $\mathbf{A} \cong \mathbf{B}$ implies an isomorphism of images in $\mathcal{E}$ via a synonymizer $(\code{i}, \code{j})$. Selecting a joint context refinement $\code{k}$ with morphisms $\kappa_i: \code{i} \to \code{k}$ and $\kappa_j: \code{j} \to \code{k}$ in $\mathbf{Ctx}$, application of the contravariant bifunctor $\Phi(-, 1_\mathcal{O})$ yields restriction arrows $\Phi(\kappa_i, 1_\mathcal{O})$ and $\Phi(\kappa_j, 1_\mathcal{O})$ in $\mathcal{E}$. Because marginalizing extra context parameters preserves the shared structural core of $\mathcal{O}$, the restrictions map the common evaluation $\varphi_{\code{k}}(\mathcal{O})$ back onto the isomorphic representatives $\mathbf{A}$ and $\mathbf{B}$. When $\code{j}$ directly refines $\code{i}$ via $\kappa: \code{i} \to \code{j}$, no information about $\mathcal{O}$ is lost across the synonym, rendering $\Phi(\kappa, 1_\mathcal{O})$ invertible, hence an isomorphism.
+\end{proof}
+
+
+
+\subsubsection*{Generalizations Beyond Set Inclusion}
+
+We can generalize our context morphism $\kappa: \code{c} \to \code{d}$ beyond pure inclusions, to capture a wide range of phenomena:
+
+\begin{enumerate}
+	\item \textbf{Coordinate Transformations / Reparameterizations:} $\kappa$ can represent a smooth change of basis (e.g., mapping a context defined in Cartesian coordinates $(x,y,z)$ to spherical coordinates $(r, \theta, \phi)$).
+	\item \textbf{Constraint Tightening:} $\kappa$ can represent restricting a domain bound (e.g., refining the context $\text{``Energy} < 10\text{ GeV''}$ to $\text{``Energy} < 5\text{ GeV''}$).
+\end{enumerate}
+
+In all cases, an arrow $\kappa: \code{c} \to \code{d}$ guarantees that any observation valid in context $\code{d}$ can be canonically mapped back to an observation in context $\code{c}$.
+
+\subsection*{The Agent-Context Bundle}
+
+To incorporate channels directly into the geometry and treat agent filters as first-class structural entities, we define a dedicated category $\mathbf{Agent}$. Let the objects of $\mathbf{Agent}$ represent distinct observers, measuring devices, or processing channels $\code{A}, \code{B}, \dots$, and let morphisms represent channel transformations or inter-agent communication links. 
+
+To formalize how these agents interact across varying environmental backgrounds, we introduce an indexing functor:
+\[
+\Phi: \mathbf{Agent} \times \mathbf{Ctx}^{\text{op}} \longrightarrow \mathbf{Cat}
+\]
+which maps each agent-context pairing to its corresponding category of evaluations or representations. Applying the Grothendieck construction to this index functor generates a fibered category:
+\[
+\int \Phi \longrightarrow \mathbf{Agent} \times \mathbf{Ctx}
+\]
+Within this total category, the base objects are given by pairs $(\code{A}, \code{c})$, representing an Agent $\code{A}$ operating specifically within Context $\code{c}$. The fibers over these base objects capture the localized epistemic states accessible to that agent under those precise conditions. Furtermore, the morphisms in this bundle lift naturally to model epistemic translations, perspective shifts, or information transmissions between different agents across varying contexts.\footnote{The agent-context bundle provides a natural categorical language for distributed and multi-channel signal processing. By treating individual sensor nodes or processing hardware as objects in $\mathbf{Agent}$ and environmental sampling configurations or window functions as contexts in $\mathbf{Ctx}$, complex sensor networks can be modeled directly through the fibered structure $\int \Phi \longrightarrow \mathbf{Agent} \times \mathbf{Ctx}$. In this setting, inter-agent morphisms capture signal transformations, cross-calibration, or adaptive filter updates. Furthermore, the failure of local evaluations to satisfy the sheaf condition can be leveraged to quantify data corruption, phase mismatches, or topological inconsistencies across asynchronous, multi-sensor data streams.}
+
+
+\section{Sheaf-Theoretic Contextuality} \label{sheaf}
+\subsection{Recollections on Sites and Kochen--Specker} \label{Groth} 
+Let us recount the following from \cite{johnstone, maclane}, adapted to our setting:
+\begin{rc}[Grothendieck Topology on Contexts] 
+	A \emph{Grothendieck topology} $J$ on $\mathbf{Ctx}$ assigns to each context $\code{c} \in \mathbf{Ctx}$ a collection $J(\code{c})$ of families of arrows $\{\kappa_k: \code{c}_k \to \code{c}\}_{k \in K}$, called \emph{covering sieves} (or \emph{coverings}), satisfying:
+	\begin{enumerate}
+		\item \textbf{Isomorphisms:} The identity arrow $\{1_\code{c}: \code{c} \to \code{c}\}$ is a covering for any $\code{c}$.
+		\item \textbf{Stability under Base Change:} If $\{\code{c}_k \to \code{c}\}$ covers $\code{c}$ and $\code{d} \to \code{c}$ is a context transition, the pullbacks $\{\code{c}_k \times_\code{c} \code{d} \to \code{d}\}$ form a covering of $\code{d}$.
+		\item \textbf{Transitivity:} If $\{\code{c}_k \to \code{c}\}$ covers $\code{c}$ and for each $k$, $\{\code{c}_{k, m} \to \code{c}_k\}$ covers $\code{c}_k$, then the composite family $\{\code{c}_{k, m} \to \code{c}\}$ covers $\code{c}$.
+	\end{enumerate}
+\end{rc}
+
+\begin{rc}
+	Equipping $\mathbf{Ctx}$ with a Grothendieck topology $J$ yields a site $(\mathbf{Ctx}, J)$, as per \cite{maclane}.
+\end{rc}
+
+\begin{rk}
+	Intuitively, a covering family $\{\code{c}_k \to \code{c}\}$ represents a joint decomposition of context $\code{c}$ into a family of sub-contexts or local perspectives that collectively span all specifying parameters of $\code{c}$.
+\end{rk}
+
+
+\begin{dn}
+	For a fixed ontic object $\mathcal{O}$, the assignment:
+	\[
+	\mathcal{F}_\mathcal{O}: \mathbf{Ctx}^{\text{op}} \longrightarrow \mathbf{Set}, \quad \code{c} \longmapsto \text{Hom}_\mathcal{E}(1_\mathcal{E}, \Phi(\code{c}, \mathcal{O}))
+	\]
+	defines the \emph{presheaf of local evaluations} for $\mathcal{O}$.
+\end{dn}
+
+\begin{dn}
+	An ontic object $\mathcal{O}$ is \emph{non-contextual} under $\Phi$ if $\mathcal{F}_\mathcal{O}$ satisfies the sheaf condition for all coverings in $\mathbf{Ctx}$. Conversely, a family of local evaluations $\{s_k \in \mathcal{F}_\mathcal{O}(\code{c}_k)\}$ that agree on pairwise overlaps $\code{c}_k \times_\code{c} \code{c}_m$ but fail to glue into a unique global section $s \in \mathcal{F}_\mathcal{O}(\code{c})$ exhibits \emph{epistemic contextuality}.
+\end{dn}
+
+\begin{rc}[The Sheaf Condition] \label{SheafCondition}
+	Let $(\mathbf{Ctx}, J)$ be a site. A presheaf $\mathcal{F}: \mathbf{Ctx}^{\text{op}} \to \mathbf{Set}$ satisfies the \emph{sheaf condition} if, for every context $\code{c} \in \mathbf{Ctx}$ and every covering family $\{\kappa_k: \code{c}_k \to \code{c}\}_{k \in K} \in J(\code{c})$, the following exactness property holds:
+	
+	For any family of local sections $\{s_k \in \mathcal{F}(\code{c}_k)\}_{k \in K}$ that are compatible on pairwise overlaps---meaning that for the canonical pullback projections $\pi_1: \code{c}_k \times_\code{c} \code{c}_m \to \code{c}_k$ and $\pi_2: \code{c}_k \times_\code{c} \code{c}_m \to \code{c}_m$, we have
+	\begin{equation}
+		\mathcal{F}(\pi_1)(s_k) = \mathcal{F}(\pi_2)(s_m) \quad \text{in} \quad \mathcal{F}(\code{c}_k \times_\code{c} \code{c}_m)
+	\end{equation}
+	for all $k, m \in K$---there exists a \emph{unique} global section $s \in \mathcal{F}(\code{c})$ such that $\mathcal{F}(\kappa_k)(s) = s_k$ for all $k \in K$.
+	
+	Categorically, this asserts that the following diagram is an equalizer in $\mathbf{Set}$:
+	\begin{equation}
+		\begin{tikzcd}
+			\mathcal{F}(\code{c}) \arrow[r, "e"] & \prod_{k \in K} \mathcal{F}(\code{c}_k) \arrow[r, "p" description, shift left] \arrow[r, "q" description, shift right] & \prod_{k,m \in K} \mathcal{F}(\code{c}_k \times_\code{c} \code{c}_m)
+		\end{tikzcd}
+	\end{equation}
+	where $e$ is the canonical map induced by the restriction morphisms $\mathcal{F}(\kappa_k)$, and $p, q$ are induced by restrictions along the pullback projections $\pi_1, \pi_2$.
+\end{rc}
+
+The primary obstruction to gluing pairwise compatible local evaluations into a global evaluation is quantified by non-trivial classes in the Čech cohomology group:
+\[
+\check{H}^1(\mathbf{Ctx}, \mathcal{F}_\mathcal{O}) \neq 0
+\]
+
+The Kochen--Specker theorem tells us that our trivial contexts from \S\ref{Prelim} do not exist\footnote{For a concrete example, see \S\refeq{ContDef}.}: 
+
+\begin{rk}[Global Sections and Contextuality]
+	In standard operational models of quantum contextuality (e.g., Abramsky \& Brandenburger \cite{abramsky}), assuming the site $(\mathbf{Ctx}, J)$ possesses a terminal object $\mathbf{1}_{\mathbf{Ctx}}$ (the ``global context'' containing all measurable parameters simultaneously), non-contextuality is equivalent to the existence of a global section $s \in \mathcal{F}_\mathcal{O}(\mathbf{1}_{\mathbf{Ctx}})$. Such global sections correspond directly to deterministic, non-contextual hidden variable assignments. Empirical quantum non-locality and Kochen-Specker contextuality manifest precisely when local sections exist across all measurement sub-contexts $\code{c}_k$ in a covering of $\mathbf{1}_{\mathbf{Ctx}}$, yet fail to collate into a global section in $\mathcal{F}_\mathcal{O}(\mathbf{1}_{\mathbf{Ctx}})$.
+\end{rk}
+
+\subsection{Homological Obstructions and Contextual Deformations}
+
+To capture the structural failure of global sections beyond simple set-theoretic obstructions, we elevate our epistemic category $\mathcal{E}$ to an abelian category. Let $\mathcal{R}$ be a sheaf of rings over the site $(\mathbf{Ctx}, J)$ representing the algebra of all possible observational parameters. For any context $\code{c}$, let $\mathcal{I}_\code{c} \subset \mathcal{R}$ be the ideal sheaf generated by parameters that are marginalized, filtered, or otherwise inaccessible within $\code{c}$.
+
+The presheaf of local evaluations $\mathcal{F}_\mathcal{O}$ can thus be formalized as a sheaf of $\mathcal{R}$-modules, where the evaluation localized to $\code{c}$ is given by the quotient $\mathcal{F}_\code{c} \coloneq \mathcal{R} / \mathcal{I}_\code{c}$.
+
+\begin{dn}[Contextual Extension] 
+	Consider two contexts $\code{c}$ and $\code{d}$, and let $\mathcal{F}$ and $\mathcal{G}$ be their corresponding evaluation sheaves of modules. A transition between these contexts that cannot be trivially synonymized induces an extended epistemic state $\mathcal{E}$, captured by a short exact sequence:
+	\begin{equation}
+		0 \longrightarrow \mathcal{G} \longrightarrow \mathcal{E} \longrightarrow \mathcal{F} \longrightarrow 0
+	\end{equation}
+\end{dn}
+
+The equivalence classes of such extensions are classified by the first Ext-group, $\text{Ext}^1_{\mathcal{R}}(\mathcal{F}, \mathcal{G})$. Moving to the derived category of $\mathcal{R}$-modules, $D(\mathcal{R})$, we can view these extensions algebraically as shifted morphisms:
+\begin{equation}
+	\text{Ext}^1_{\mathcal{R}}(\mathcal{F}, \mathcal{G}) \cong \text{Hom}_{D(\mathcal{R})}(\mathcal{F}, \mathcal{G}[1])
+\end{equation}
+
+\begin{rk}[Deformation Directions]
+	When $\text{Ext}^1_{\mathcal{R}}(\mathcal{F}, \mathcal{G}) = 0$, the short exact sequence splits. This implies $\mathcal{E} \cong \mathcal{F} \oplus \mathcal{G}$, meaning the contexts are structurally compatible and their evaluations can be trivially glued (a classical synonym exists). When $\text{Ext}^1_{\mathcal{R}}(\mathcal{F}, \mathcal{G}) \neq 0$, the sequence fails to split. The non-zero cohomology class specifies the exact \emph{deformation direction} required to translate the epistemic state from context $\code{c}$ to context $\code{d}$. In this homological framing, epistemic contextuality is strictly synonymous with a non-trivial extension.
+\end{rk}
+
+\section{Kan Extensions in Contextual Mathematics} \label{Kan}
+
+In \S\ref{sheaf}, we defined the presheaf of local evaluations $\mathcal{F}_\mathcal{O}: \mathbf{Ctx}^{\text{op}} \to \mathbf{Set}$ and observed that epistemic contextuality corresponds to the failure of local sections to glue into a unique global section. We can formalize this obstruction categorically using Kan extensions\footnote{This lines us up nicely with the recent work of Pugh, et al. \cite{Pugh}, in which it was shown that Kan extensions can model learning.}, which provide universal functorial approximations and eliminate the need to redundantly define localized state transitions.
+
+Let $K: \mathbf{Ctx}' \to \mathbf{Ctx}$ be a functor embedding a restricted operational subcategory (such as the classical commuting observational domains referenced in \S\ref{ContDef}) into the full context category. The problem of pushing forward or extending an epistemic evaluation from $\mathbf{Ctx}'$ to $\mathbf{Ctx}$ is solved by the Kan extensions of the restricted presheaf $\mathcal{F}'_\mathcal{O} \coloneq \mathcal{F}_\mathcal{O} \circ K^{\text{op}}$.
+
+\begin{dn}[Contextual Kan Extensions]
+	The \emph{Right Kan Extension} $\mathrm{Ran}_{K^{\text{op}}} \mathcal{F}'_\mathcal{O}$ provides the tightest limit-bound approximation of the global epistemic state, computed via limits over the comma categories. Dually, the \emph{Left Kan Extension} $\mathrm{Lan}_{K^{\text{op}}} \mathcal{F}'_\mathcal{O}$ yields the freest colimit-bound extension, patching together localized data by taking the most conservative union of overlapping contextual parameters.
+\end{dn}
+
+\begin{rk}
+	Categorically, the Right Kan Extension defines the optimal factorization (up to a natural transformation $\varepsilon$) through the extended context category:
+	\begin{equation}
+		\begin{tikzcd}[row sep=large, column sep=large]
+			\mathbf{Ctx}'^{\text{op}} \arrow[rr, "\mathcal{F}'_\mathcal{O}"] \arrow[dr, "K^{\text{op}}"'] & & \mathbf{Set} \\
+			& \mathbf{Ctx}^{\text{op}} \arrow[ur, dashed, "\mathrm{Ran}_{K^{\text{op}}} \mathcal{F}'_\mathcal{O}"'] &
+		\end{tikzcd}
+	\end{equation}
+\end{rk}
+
+If $\mathcal{F}_\mathcal{O}$ cannot be exactly recovered by its own right Kan extension along a coarse-graining functor $K$ (i.e., $\mathcal{F}_\mathcal{O} \not\cong \mathrm{Ran}_{K^{\text{op}}} (\mathcal{F}_\mathcal{O} \circ K^{\text{op}})$), this discrepancy explicitly measures the information lost or deformed during the transition[cite: 1]. Specifically, when context transitions cannot be trivially synonymized per Definition~\ref{Synonyms}, the Kan extensions fail to isolate the original presheaf, leading to the non-trivial extension classes $\text{Ext}^1 \neq 0$ explored in \S\ref{ContDef}.
+
+\begin{pp}
+	Let $!: \mathbf{Ctx}^{\text{op}} \to \mathbf{1}$ be the unique terminal functor to the category with one object. The Right Kan extension of $\mathcal{F}_\mathcal{O}$ along $!$ evaluates to the global limit of the presheaf over the entire category $\mathbf{Ctx}^{\text{op}}$. 
+	
+	\begin{equation}
+		\begin{tikzcd}[row sep=large, column sep=large]
+			\mathbf{Ctx}^{\text{op}} \arrow[rr, "\mathcal{F}_\mathcal{O}"] \arrow[dr, "!"'] & & \mathbf{Set} \\
+			& \mathbf{1} \arrow[ur, dashed, "\mathrm{Ran}_! \mathcal{F}_\mathcal{O}"'] &
+		\end{tikzcd}
+	\end{equation}
+	
+	This limit corresponds exactly to the set of global sections on the terminal object $\mathbf{1}_{\mathbf{Ctx}}$:
+	\begin{equation}
+		(\mathrm{Ran}_! \mathcal{F}_\mathcal{O})(\ast) \cong \lim_{\mathbf{Ctx}^{\text{op}}} \mathcal{F}_\mathcal{O} \cong \Gamma(\mathbf{Ctx}, \mathcal{F}_\mathcal{O}) .
+	\end{equation}
+	Consequently, the Kochen--Specker theorem ()which establishes the non-existence of a universal synonymizer (\S\ref{Prelim}) or global, deterministic non-contextual assignment) is categorically equivalent to the statement that $\mathrm{Ran}_! \mathcal{F}_\mathcal{O} \cong \emptyset$ for quantum observables.
+\end{pp}
+\section{Spacetime Contexts and Temporal Evaluations} \label{Spacetime}
+In this section, we show how contextuality applies to relativistic physics. Thus, contextuality, and the Kochen--Specker theorem, are no longer merely ``quantum" effects, but have been successfully generalized. 
+
+Let $\mathbf{Loc}$ denote the category of globally hyperbolic spacetimes, where objects $M \in \mathbf{Loc}$ are oriented, time-oriented smooth $d$-dimensional Lorentzian manifolds, and morphisms $f: M \to N$ are causal isometric embeddings. We replace the primitive ontic category $\mathcal{O}$ from \S\ref{Prelim} with $\mathbf{Loc}$, anchoring local physical observables directly to spacetime regions.
+
+\begin{dn}[Temporal Framing Function]
+	Let $\code{c} \in \mathbf{Ctx}$ be a specifying context (representing a reference frame, slice choice, or observational apparatus). We define the \emph{contextual time evaluation} $t_{\code{c}}$ as a parameterized mapping:
+	\begin{equation}
+		t_{\code{c}}(x) \coloneq t(x_{\code{c}})
+	\end{equation}
+	which assigns to a parameter $x$ a local spacetime frame $x_{\code{c}} \in M$ within a designated spacetime $M \in \mathbf{Loc}$.
+\end{dn}
+
+\begin{rk}[AQFT Covariance and Contextual Slicing]
+	In standard Haag-Kastler AQFT, local observable algebras are generated via a net functor $\mathcal{A}: \mathbf{Loc} \to \mathbf{Alg}$. By specifying time as a contextual function $t_{\code{c}}(x)$, context refinements $\kappa: \code{c} \to \code{d}$ in $\mathbf{Ctx}$ induce pullback maps on the underlying frame evaluations $x_{\code{c}}$, explicitly linking contextuality to non-trivial spacelike slice overlaps and local algebra embeddings $\mathcal{A}(M(t_{\code{c}})) \hookrightarrow \mathcal{A}(M(t_{\code{d}}))$.
+\end{rk}
+
+\subsection{Epistemic Contexts and Device-Dependent Time-Cutoffs in AQFT}
+
+In the Fewster-Verch formulation of Algebraic Quantum Field Theory (AQFT) \cite{fewster2012, fewster2013}, physical systems are described by a functor $\mathcal{A} : \mathbf{Loc} \to \mathbf{Phys}$, where $\mathbf{Loc}$ consists of globally hyperbolic spacetimes. To satisfy the timeslice axiom—ensuring observables can be reconstructed from a neighborhood of a Cauchy surface—one typically employs a smooth time-cutoff function. Moving from an idealized abstract continuum to an operational, observer-centric perspective, we can index these time-cutoffs by physical measuring devices $\code{A}$ and $\code{B}$ operating within specific epistemic contexts $\code{c}$ and $\code{d}$. A device-dependent time-cutoff $t_{\code{c}}^{\code{A}}(x)$ can be formalized to reflect how a specific measuring apparatus $\code{A}$ samples or localizes spacetime events relative to a context $\code{c}$; by our axiom \eqref{Channel} we must have: $$t_{\code{c}}^{\code{A}}(x) = t(x_{\code{A} \circ \code{c}})$$ where the composition $\code{A} \circ \code{c}$ maps internal device coordinates or filtering actions onto the global spacetime manifold structure.
+
+We shall let our $\mathcal{E}$ be structured as the category $\mathbf{Conv}$, whose objects are convex sets $\mathcal{S}$ of epistemic states (such as density matrices or algebraic states over a $C^*$-algebra) and whose morphisms are affine state transitions. For a context $\code{c}$ and spacetime $M$, $\Phi(\code{c}, M)$ yields the accessible set of states $\mathcal{S}_{\code{c}}(M)$ constrained by device $\code{A}$'s operational limits. 
+
+Consider a single globally hyperbolic spacetime $M \in \mathbf{Loc}$ with the identity morphism $1_M : M \to M$. Suppose device $\code{A}$ operates in a high-resolution context $\code{c}$, granting access to the full algebra of observables $\mathcal{A}(M)$ via its time-cutoff profile $t_{\code{c}}^{\code{A}}(x)$. Alternatively, device $\code{B}$ operates in a low-resolution or restricted context $\code{d}$, governed by $t_{\code{d}}^{\code{B}}(x)$, where the apparatus is confined to a smaller causal diamond $O \subset M$, yielding only the localized subalgebra $\mathcal{A}(O) \subset \mathcal{A}(M)$. A morphism $\kappa: \code{c} \to \code{d}$ in $\mathbf{Cxt}$ then represents the operational coarse-graining or transition from device $\code{A}$'s broader scope to device $\code{B}$'s restricted purview. 
+
+Evaluating our functor $\Phi$ on the pair $(\kappa, 1_M)$ yields the epistemic morphism:
+$$
+\Phi(\kappa, 1_M) : \Phi(\code{c}, M) \to \Phi(\code{d}, M)
+$$
+Here, $\Phi(\code{c}, M) = \mathcal{S}(\mathcal{A}(M))$ and $\Phi(\code{d}, M) = \mathcal{S}(\mathcal{A}(O))$, making $\Phi(\kappa, 1_M)$ the algebraic restriction map. For any global state $\omega \in \mathcal{S}(\mathcal{A}(M))$, this transition acts as $\Phi(\kappa, 1_M)(\omega) = \omega|_{\mathcal{A}(O)}$. This mapping is inherently many-to-one; if two global states $\omega_1$ and $\omega_2$ differ only by quantum excitations occurring outside device $\code{B}$'s restricted causal diamond $O$, they are mapped to the identical local state $\Phi(\kappa, 1_M)(\omega_1) = \Phi(\kappa, 1_M)(\omega_2)$. Thus, the device-indexed framework mathematically captures the physical reality that a coarse-grained measuring apparatus lacks the epistemic capacity to distinguish between fine-grained environmental variations beyond its localized domain.
+
+\subsection{Contextual Deformation Quantization and Kochen-Specker} \label{ContDef}
+
+We can now cleanly apply the homological machinery of \S\ref{sheaf} to the causal structure of spacetime. Let $\mathcal{R}$ be instantiated as the sheaf of classical, commutative observables $\mathcal{A}_0(M)$ over a globally hyperbolic spacetime $M \in \mathbf{Loc}$, typically given by smooth functions on a classical phase space.
+
+If our measuring devices $\code{A}$ and $\code{B}$ operate strictly in the classical regime, their respective local algebras commute. The intersection of their operational domains yields a splitting exact sequence, and $\text{Ext}^1_{\mathcal{A}_0}(\mathcal{F}_\code{A}, \mathcal{F}_\code{B}) = 0$. In this classical limit, a global context $\mathbf{1}_{\mathbf{Ctx}}$ can always be reconstructed.
+
+However, moving to the quantum regime requires a formal deformation of $\mathcal{A}_0(M)$ into a non-commutative net of $C^*$-algebras $\mathcal{A}_\hbar(M)$. In this regime, physical devices $\code{A}$ and $\code{B}$ operating in distinct causal diamonds or measuring non-commuting observables (e.g., position and momentum) cannot trivially share an epistemic state.
+
+\begin{pp}[Kochen-Specker as a Non-Trivial Extension]
+	The Kochen-Specker theorem asserts that a deterministic, non-contextual assignment of values to all quantum observables simultaneously is impossible. In our framework, this is equivalent to the statement that for quantum contexts $\code{c}$ and $\code{d}$ measuring non-commuting observables, the associated short exact sequence of local evaluations does not split:
+	\begin{equation}
+		\text{Ext}^1_{\mathcal{A}_\hbar}(\mathcal{F}_\code{c}, \mathcal{F}_\code{d}) \neq 0
+	\end{equation}
+\end{pp}
+
+The shift $[1]$ in the derived category $D(\mathcal{A}_\hbar)$ precisely encodes the quantum deformation\footnote{In practice, this is often governed by a Moyal star product or Poisson bivector.} that breaks the classical synonymity. 
+
+\begin{eg}
+	To explicitly compute the obstruction that breaks the classical trivial context, let the classical ontic state space be a symplectic manifold $(M, \omega)$. The classical epistemic contexts evaluate observables in the commutative algebra $\mathcal{A}_0 = C^\infty(M)$. 
+	
+	The transition to a quantum context is a formal deformation quantization $\mathcal{A}_\hbar = \mathcal{A}_0[[\hbar]]$ equipped with the Moyal star product:
+	\begin{equation}
+		f \star g = fg + \hbar C_1(f, g) + \mathcal{O}(\hbar^2)
+	\end{equation}
+	For the new evaluation to remain associative across overlapping contexts, the first-order deformation $C_1: \mathcal{A}_0 \otimes \mathcal{A}_0 \to \mathcal{A}_0$ must satisfy the Hochschild 2-cocycle condition:
+	\begin{equation} \label{eq:cocycle}
+		(\delta C_1)(f, g, h) = f C_1(g, h) - C_1(fg, h) + C_1(f, gh) - C_1(f, g)h = 0
+	\end{equation}
+	In canonical deformation quantization, this first-order term is the Poisson bracket, yielding $C_1(f, g) = \frac{i}{2} \{f, g\}$. Utilizing the Poisson bivector $\pi \in \Gamma(\Lambda^2 TM)$ (the inverse of the symplectic form $\omega$), this is written via exterior derivatives as:
+	\begin{equation}
+		C_1(f, g) = \frac{i}{2} \pi(df, dg)
+	\end{equation}
+	If the global classical context could be preserved, this deformation would be a \emph{coboundary}---meaning the contextual shift could be absorbed by a local reparameterization (a 1-cochain $X: \mathcal{A}_0 \to \mathcal{A}_0$) such that $C_1 = \delta X$. The action of the Hochschild coboundary operator on $X$ is:
+	\begin{equation}
+		(\delta X)(f, g) = f X(g) - X(fg) + X(f)g
+	\end{equation}
+	By the Leibniz rule, if $X$ is a derivation (a standard vector field), $\delta X(f, g) \equiv 0$. More critically, for any linear map $X$, $\delta X(f, g)$ produces a symmetric contribution. However, the Poisson bivector $\pi$ enforces strict antisymmetry: $C_1(f, g) = -C_1(g, f)$. 
+	
+	Consequently, $C_1$ cannot be expressed as $\delta X$. By the Hochschild-Kostant-Rosenberg (HKR) theorem \cite{Kelly}, the cohomology group governing these extensions is isomorphic to the space of multivector fields, $HH^2(\mathcal{A}_0, \mathcal{A}_0) \cong \Gamma(\Lambda^2 TM)$. The Poisson bivector $\pi$ forms a strictly non-zero cohomology class:
+	\begin{equation}
+		[\pi] \neq 0 \quad \text{in} \quad HH^2(\mathcal{A}_0, \mathcal{A}_0)
+	\end{equation}
+	This non-trivial class is the explicit mathematical obstruction preventing the gluing of local quantum evaluations $\mathcal{F}_\code{c}$ back into the global classical algebra $\mathcal{A}_0$. The exterior derivative and wedge structure of the symplectic phase space physically enforce the contextuality mandated by our earlier $\text{Ext}^1 \neq 0$ condition.
+\end{eg}
+
+\subsection{Subscript Invariance and Causal Lightcones} \label{Lightcones}
+
+In Axiom~\ref{subinv}, we introduced the fundamental principle of Subscript Invariance (Axiom 1), which dictates that for any evaluation functor $\varphi$ and context $\code{c}$, we have $\varphi_{\code{c}}(\mathcal{O}) \equiv \varphi(\mathcal{O}_{\code{c}})$. By elevating our ontic category to $\mathbf{Loc}$ as established in \S\ref{Spacetime}, this axiom takes on a profound physical interpretation regarding causality and lightcone geometries.
+
+Let the ontic object $M \in \mathbf{Loc}$ be a globally hyperbolic spacetime. We can specify a context $\code{c}$ as the operational confinement of an observer to a specific causal diamond $M_{\code{c}} \subset M$, defined by the intersection of the future and past lightcones\footnote{The author of the present paper has developed a version of the causal diamonds using modal logic \cite{buchanan2, buchanan3}; to translate between the two, we let $J^+ \cong \diamondsuit^+(x)$ for a chosen point $x \in M$, and $J^-$ is then $\diamondsuit^-(x)$. In later works, we will consider contextual modalities in more depth.} of two spacetime points $p, q \in M$:
+\begin{equation}
+	M_{\code{c}} \coloneq J^+(p) \cap J^-(q)
+\end{equation}
+Subscript Invariance demands that applying the contextually filtered observation $\varphi_{\code{c}}$ to the entire global spacetime $M$ is strictly equivalent to applying the unfiltered, universal observation functor $\varphi$ directly to the causally restricted sub-manifold $M_{\code{c}}$. 
+
+This categorical equivalence provides a natural bedrock for Einstein causality (microcausality) in Algebraic Quantum Field Theory. Consider two contexts $\code{c}$ and $\code{d}$ representing purely spacelike separated observers. Geometrically, their respective causal diamonds are disjoint such that no causal curve connects $M_{\code{c}}$ and $M_{\code{d}}$. 
+
+Applying Subscript Invariance, the local epistemic evaluations are completely determined by the restricted ontic geometries:
+\begin{equation}
+	\varphi_{\code{c}}(M) = \varphi(M_{\code{c}}) \quad \text{and} \quad \varphi_{\code{d}}(M) = \varphi(M_{\code{d}})
+\end{equation}
+If we let $\varphi$ map into our epistemic category of non-commutative $C^*$-algebras $\mathcal{A}_\hbar$ (as explored in \S\ref{ContDef}), the spacelike separation of the submanifolds $M_{\code{c}}$ and $M_{\code{d}}$ in $\mathbf{Loc}$ dictates that their induced observable algebras must mutually commute:
+\begin{equation}
+	[\varphi(M_{\code{c}}), \varphi(M_{\code{d}})] = 0
+\end{equation}
+Because $\varphi_{\code{c}}(M)$ cannot extract structural data outside $M_{\code{c}}$, it acts as a perfect marginalization over the complement $M \setminus M_{\code{c}}$. Thus, Subscript Invariance mathematically enforces the physical reality that spacelike-separated contexts act as independent parameters; a measurement in context $\code{c}$ cannot serve as a context refinement ($\kappa: \code{c} \to \code{d}$) for context $\code{d}$. 
+
+In the homological language of \S\ref{sheaf}, the deformation direction governing their extension, $\text{Ext}^1_{\mathcal{A}_\hbar}(\mathcal{F}_{\code{c}}, \mathcal{F}_{\code{d}})$, trivially vanishes for strictly spacelike separated contexts. This ensures the short exact sequence splits, and their joint epistemic state forms a trivial synonym corresponding to a simple tensor product of causally independent evaluations.
+
+\pagebreak
+
+\appendix
+\section{Future Work and Outlook}
+The author identifies three key directions for future work:
+\begin{enumerate}
+	\item \textbf{Foundational Physics}: In areas like the Costello--Gwilliam program \cite{costello}, topos--based quantum physics (which already employs a limited version of contextuality), etc., we may model measuring devices and quantum effects using a version of contextual mathematics very much like the one described here. Since it has already shown some utility reproducing the Kochen--Specker theorem, and has some application to AQFT, it is not unreasonable to expect more from this theory. 
+	\item \textbf{Learning and Cognition}: In other areas where agents (human or machine) are involved, and where perception differs between them (like active inference), the framework here already provides a very natural language. Contextual Kullback--Leibler divergences, weighted contextuality, etc., are possible directions in these areas.
+	\item \textbf{Pure Mathematics}: Directed algebraic topology \cite{grandis, gaucher}, which has applications to concurrency, can possibly be ``contextified," giving rise to a new type theory. In addition, almost anything in mathematics can be contextified: pure category theory seems to benefit the most, but homotopy--theory, other areas of topology, and logic are also natural candidates. Crucially, the emerging \emph{hypercohomology}, using \emph{hypersheaves} \cite{clausen}, could be promising for analyzing systems with large numbers of contexts and channels. 
+\end{enumerate}
+
+\begin{thebibliography}{9}
+		\bibitem{abramsky}
+	S.~Abramsky and A.~Brandenburger,
+	\emph{The sheaf-theoretic structure of non-locality and contextuality},
+	New Journal of Physics \textbf{13} (2011), 113036.
+	
+	\bibitem{buchanan}
+	R.~J.~Buchanan and D.~A.~Monroe,
+	\emph{Context-Dependent Logic},
+	Authorea (2025), \url{https://doi.org/10.22541/au.173801320.09343751/v1}
+	
+	\bibitem{buchanan2}
+	R.~J.~Buchanan
+	\emph{$(p,q)$-String Junctions as Interstitial Fields on a Modal Lightcone},
+	Preprints (2025) doi: 10.20944/preprints202512.1940.v1
+	 Available at: \url{https://www.preprints.org/manuscript/202512.1940}
+	 
+	 \bibitem{buchanan3}
+	 R.~J.~Buchanan
+	 \emph{Causal Set Approach to AQFT},
+	 Preprints (2026) doi: 10.20944/preprints202601.1518.v1
+	 Available at: \url{https://www.preprints.org/manuscript/202601.1518}
+	
+	\bibitem{cannon}
+	S.~Cannon,
+	\emph{The Spectral Presheaf of an Orthomodular Lattice}
+	MSc. Thesis, Univ. of Oxford, (2013)
+	
+	\bibitem{clausen}
+	D.~Clausen and A.~Mathew,
+	\emph{Hyperdescent and étale K-theory},
+	Invent. math. (2021) 225:981-1076
+	
+	\bibitem{costello}
+	K.~Costello, O.~Gwilliam,
+	\emph{Factorization algebra},
+	https://arxiv.org/abs/2310.06137 (2023)
+	
+	\bibitem{dunne}
+	K.~Dunne,
+	\emph{Spectral Presheaves, Kochen--Specker Contextuality, and Quantale-Valued Relations}
+	EPTCS \textbf{66}, pp. 386-398 (2018)
+	
+	\bibitem{Fabbrichesi}
+	M.~Fabbrichesi, R.~Floreanini, E.~Gabrielli, L.~Marzola,
+	\emph{Tests of quantum contextuality in particle physics},
+	Phys. Rev. D \textbf{112}, 033005 (2025),
+		arXiv:2504.12382
+	
+		\bibitem{fewster2012}
+	C.~J.~Fewster and R.~Verch,
+	\emph{Dynamical locality and covariance: What makes a physical theory the same in all spacetimes?},
+	Annales Henri Poincar{\'e} \textbf{13} (2012), 1613--1674,
+	arXiv:1106.4785.
+	
+	\bibitem{fewster2013}
+	C.~J.~Fewster,
+	\emph{Endomorphisms and automorphisms of locally covariant quantum field theories},
+	Rev. Math. Phys. \textbf{25} (2013), 1350008,
+	arXiv:1201.3295.
+	
+	\bibitem{grandis}
+	M.~Grandis,
+	\emph{Directed Algebraic Topology: Models of Non--Reversible Worlds},
+	New Mathematical Monographs, Series No. \textbf{13} (2009)
+	
+	\bibitem{gaucher}
+	P.~Gaucher,
+	\emph{Left properness of Moore flows}
+		arXiv:2608.13165 (2026)
+	
+	\bibitem{Howard}
+	M.~Howard, J.~J.~Wallman, V.~Veitch, J.~Emerson,
+	\emph{Contextuality supplies the magic for quantum computation},
+		arXiv:1401.4174 (2014)
+	
+	\bibitem{Khu}
+	D.~Khu, a.~Tanggara, C.~Jin, K.~Bharti,
+	\emph{Contextuality of Quantum Error-Correcting Codes}
+	PRX Quantum \textbf{7}, 010319 (2026)
+		arXiv:2502.02553
+	
+	\bibitem{johnstone}
+	P.~T.~Johnstone,
+	\emph{Sketches of an Elephant: A Topos Theory Compendium},
+	vols.~1--2, Oxford Logic Guides, Oxford University Press (2002)
+	
+	\bibitem{Kelly}
+	J.~Kelly, K.~Kremnizer, D.~Mukherjee,
+	\emph{Analytic Hochschild--Kostant--Rosenberg Theorem}, (2021)	arXiv:2111.03502
+	
+\bibitem{maclane}
+S.~Mac~Lane and I.~Moerdijk,
+\emph{Sheaves in Geometry and Logic: A First Introduction to Topos Theory},
+Springer-Verlag, New York (1992)
+
+\bibitem{Pugh}
+M.~Pugh, J.~Grundy, C.~Cirstea, N.~Harris,
+\emph{Learning is a Kan Extension},
+	arXiv:2502.13810 (2025)
+\end{thebibliography}
+
+
+\end{document}
