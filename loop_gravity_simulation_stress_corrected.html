@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Closed Elastic Loop — Energy & Multipole Explorer</title>
+<style>
+  :root { color-scheme: dark; --bg:#0b1020; --panel:#131b2f; --panel2:#0f172a; --line:#2a3854; --ink:#eef3ff; --muted:#a5b3cc; --cyan:#53d8d2; --blue:#7aa8ff; --orange:#ffbd69; --pink:#ff8eb4; --good:#8fe2b1; }
+  * { box-sizing:border-box }
+  body { margin:0; background:linear-gradient(135deg,#0a0f1e,#101a30 60%,#111827); color:var(--ink); font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; }
+  .wrap { max-width:1320px; margin:0 auto; padding:26px 20px 46px; }
+  header { margin:0 0 20px; }
+  .eyebrow { color:var(--cyan); text-transform:uppercase; letter-spacing:.15em; font-size:11px; font-weight:800; }
+  h1 { font-size:clamp(26px,4vw,40px); line-height:1.1; margin:8px 0 10px; letter-spacing:-.025em; }
+  h2 { font-size:18px; margin:0 0 12px; }
+  h3 { font-size:14px; margin:0 0 10px; color:#dfe8fb; }
+  p { margin:7px 0 0; color:var(--muted); }
+  .sub { max-width:900px; font-size:15px; }
+  .layout { display:grid; grid-template-columns:320px minmax(0,1fr); gap:16px; align-items:start; }
+  .panel { background:rgba(19,27,47,.94); border:1px solid var(--line); border-radius:16px; padding:17px; box-shadow:0 14px 36px rgba(0,0,0,.16); min-width:0; }
+  .controls { display:flex; flex-direction:column; gap:17px; }
+  .group { padding-bottom:14px; border-bottom:1px solid rgba(74,94,130,.38); }
+  .group:last-child { padding-bottom:0; border-bottom:0; }
+  .control { margin:11px 0 0; }
+  .labelrow { display:flex; gap:10px; justify-content:space-between; align-items:baseline; font-size:13px; color:#dae5fa; }
+  .value { color:var(--cyan); font-weight:750; font-variant-numeric:tabular-nums; }
+  input[type=range] { width:100%; accent-color:var(--cyan); margin:9px 0 0; cursor:pointer; }
+  select { background:#0b1325; border:1px solid #394969; border-radius:8px; color:var(--ink); padding:7px 9px; }
+  .btnrow { display:flex; gap:8px; flex-wrap:wrap; }
+  button { cursor:pointer; border:1px solid #405274; background:#18243b; color:var(--ink); border-radius:9px; padding:8px 11px; font-weight:650; font-size:12px; }
+  button:hover { border-color:var(--cyan); background:#1b3045; }
+  button.primary { background:#12343d; border-color:#28747a; color:#cffffa; }
+  .main { display:grid; gap:16px; min-width:0; }
+  .topgrid { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr); gap:16px; }
+  .shapearea { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; }
+  #loopSvg { display:block; width:100%; height:auto; max-height:410px; background:radial-gradient(ellipse at center,#15233a,#0c1425 70%); border:1px solid #263754; border-radius:12px; }
+  .legend { display:flex; flex-wrap:wrap; gap:12px; color:var(--muted); font-size:12px; }
+  .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-right:5px; }
+  .metrics { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .metric { background:#0c1426; border:1px solid #263754; border-radius:11px; padding:12px; min-width:0; }
+  .metric .name { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.07em; }
+  .metric .num { font-size:clamp(18px,2.5vw,25px); font-weight:800; margin-top:4px; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+  .metric .hint { color:var(--muted); font-size:11px; margin-top:3px; }
+  .accent { color:var(--cyan); }
+  .orange { color:var(--orange); }
+  .blue { color:var(--blue); }
+  .pink { color:var(--pink); }
+  .tablewrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:13px; font-variant-numeric:tabular-nums; }
+  th,td { padding:9px 10px; border-bottom:1px solid rgba(74,94,130,.38); text-align:right; white-space:nowrap; }
+  th { color:#c2d1ea; font-size:11px; text-transform:uppercase; letter-spacing:.06em; font-weight:750; }
+  th:first-child, td:first-child { text-align:left; }
+  tr:last-child td { border-bottom:0; }
+  .sectionhead { display:flex; justify-content:space-between; gap:14px; align-items:baseline; margin-bottom:10px; }
+  .pill { border:1px solid #36506e; color:#bcd0ed; border-radius:99px; padding:3px 8px; font-size:11px; white-space:nowrap; }
+  .small { font-size:12px; }
+  .formula { background:#0b1324; border:1px solid #263754; color:#e4edff; border-radius:10px; padding:12px; font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; overflow-x:auto; }
+  .twocol { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .note { border-left:3px solid var(--orange); padding:9px 12px; color:#d9e2f3; background:rgba(255,189,105,.06); border-radius:0 8px 8px 0; font-size:12px; }
+  .status { font-size:12px; color:var(--muted); margin-top:8px; }
+  .ok { color:var(--good); }
+  .bad { color:var(--orange); }
+  footer { color:var(--muted); font-size:12px; margin-top:18px; }
+  @media(max-width:1000px) { .layout { grid-template-columns:1fr; } .controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); } .topgrid { grid-template-columns:1fr 1fr; } }
+  @media(max-width:650px) { .wrap { padding:18px 12px 32px; } .controls,.topgrid,.twocol { grid-template-columns:1fr; } .metrics { grid-template-columns:1fr 1fr; } .panel { padding:13px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Interactive mathematical model</div>
+    <h1>Closed Elastic Loop Explorer</h1>
+    <p class="sub">Change the loop’s two hemispheres and see how elastic energy, curvature-weighted source moments, and the quasi-static potential change. All values are recalculated from the smooth-peak profile using numerical integration; no external libraries are required.</p>
+  </header>
+
+  <div class="layout">
+    <aside class="panel controls" aria-label="Simulation controls">
+      <div class="group">
+        <h3>Upper hemisphere · 0 ≤ θ ≤ π</h3>
+        <div class="control"><div class="labelrow"><label for="A1">Peak amplitude A₁</label><span class="value" id="A1v">0.80</span></div><input id="A1" type="range" min="0" max="1.2" step="0.05" value="0.8"></div>
+        <div class="control"><div class="labelrow"><label for="N1">Peak count N₁</label><span class="value" id="N1v">2</span></div><input id="N1" type="range" min="1" max="8" step="1" value="2"></div>
+      </div>
+      <div class="group">
+        <h3>Lower hemisphere · π ≤ θ ≤ 2π</h3>
+        <div class="control"><div class="labelrow"><label for="A2">Peak amplitude A₂</label><span class="value" id="A2v">0.45</span></div><input id="A2" type="range" min="0" max="1.2" step="0.05" value="0.45"></div>
+        <div class="control"><div class="labelrow"><label for="N2">Peak count N₂</label><span class="value" id="N2v">4</span></div><input id="N2" type="range" min="1" max="8" step="1" value="4"></div>
+      </div>
+      <div class="group">
+        <h3>Elastic and field settings</h3>
+        <div class="control"><div class="labelrow"><label for="beta">Dimensionless bending ratio β</label><span class="value" id="betav">1.00</span></div><input id="beta" type="range" min="0.1" max="5" step="0.1" value="1"></div>
+        <div class="control"><div class="labelrow"><label for="rho">Observation distance ρ / R₀</label><span class="value" id="rhov">10.0</span></div><input id="rho" type="range" min="3" max="30" step="0.5" value="10"></div>
+        <p class="small">β = κ<sub>b</sub> / (τ R₀²). The potential is displayed as a coefficient P where Φ = −(Gτ/c²)P.</p>
+      </div>
+      <div class="group">
+        <h3>Presets</h3>
+        <div class="btnrow"><button class="primary" id="exampleBtn">Paper example</button><button id="symBtn">Symmetric</button><button id="circleBtn">Circle</button></div>
+        <p class="small">“Symmetric” sets matching hemispheres. “Circle” removes all radial peaks.</p>
+      </div>
+      <div class="group">
+        <h3>Model assumptions</h3>
+        <p class="small">Planar, regular, embedded loop. Mechanical energy density is ε̂ = 1 + βκ̂²/2; the adopted gravitational source weight is βκ̂², motivated by adding the model’s axial-stress proxy to ε̂. This is a quasi-static phenomenological source, not a complete relativistic stress-energy calculation. The asymmetric profile is a snapshot, not an asserted equilibrium.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topgrid">
+        <section class="panel">
+          <div class="sectionhead"><h2>Loop geometry</h2><span class="pill" id="shapeTag">A₁ ≠ A₂ · N₁ ≠ N₂</span></div>
+          <div class="shapearea">
+            <svg id="loopSvg" viewBox="0 0 520 430" role="img" aria-label="Planar closed loop compared with the unit circle">
+              <defs><linearGradient id="loopFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#53d8d2" stop-opacity=".22"/><stop offset="100%" stop-color="#7aa8ff" stop-opacity=".08"/></linearGradient></defs>
+              <g id="axisLayer"></g><circle cx="260" cy="215" r="82" fill="none" stroke="#9aabc5" stroke-opacity=".65" stroke-dasharray="4 6" stroke-width="1.5"/><path id="loopFillPath" fill="url(#loopFill)" stroke="none"/><path id="loopPath" fill="none" stroke="#53d8d2" stroke-width="2.6" stroke-linejoin="round"/><g id="peakLayer"></g>
+              <text x="272" y="125" fill="#a5b3cc" font-size="11">unit circle</text><text x="496" y="207" fill="#a5b3cc" font-size="11" text-anchor="end">x</text><text x="269" y="19" fill="#a5b3cc" font-size="11">+y</text>
+            </svg>
+            <div class="legend"><span><i class="dot" style="background:#53d8d2"></i>deformed loop</span><span><i class="dot" style="background:#9aabc5"></i>reference circle</span><span><i class="dot" style="background:#ffbd69"></i>peak locations</span></div>
+          </div>
+          <p class="small">Radius is normalized by the reference radius R₀ = 1. Peak spacing on hemisphere i is Δᵢ = π/Nᵢ.</p>
+        </section>
+        <section class="panel">
+          <h2>Live summary</h2>
+          <div class="metrics">
+            <div class="metric"><div class="name">Total length L̂</div><div class="num accent" id="totalL">—</div><div class="hint">in units of R₀</div></div>
+            <div class="metric"><div class="name">Total energy Ê</div><div class="num" id="totalE">—</div><div class="hint">E / (τ R₀)</div></div>
+            <div class="metric"><div class="name">Energy asymmetry</div><div class="num orange" id="asym">—</div><div class="hint">(E₂ − E₁) / (E₂ + E₁)</div></div>
+            <div class="metric"><div class="name">Gravitating monopole M̂g</div><div class="num blue" id="monopole">—</div><div class="hint">Mᵍ c² / (τ R₀) = β∮κ̂²dŝ</div></div>
+            <div class="metric"><div class="name">Dipole d̂ᵧ</div><div class="num pink" id="dipole">—</div><div class="hint">relative to circle center</div></div>
+            <div class="metric"><div class="name">Trace Q̂</div><div class="num" id="trace">—</div><div class="hint">Q̂xx + Q̂yy + Q̂zz</div></div>
+          </div>
+          <div class="note" style="margin-top:13px">The energy asymmetry is not itself a gravitational multipole. The source dipole and quadrupole weight the loop by squared curvature, so they respond to the spatial distribution of bending.</div>
+        </section>
+      </div>
+
+      <section class="panel">
+        <div class="sectionhead"><h2>Energy split</h2><span class="pill">Numerical Simpson integration</span></div>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Contribution</th><th>Upper I₁</th><th>Lower I₂</th><th>Total</th></tr></thead>
+          <tbody>
+            <tr><td>Length L̂ᵢ = ∫dŝ</td><td id="L1">—</td><td id="L2">—</td><td id="Lt">—</td></tr>
+            <tr><td>Bending B̂ᵢ = ½∫κ̂²dŝ</td><td id="B1">—</td><td id="B2">—</td><td id="Bt">—</td></tr>
+            <tr><td>Energy Êᵢ = L̂ᵢ + βB̂ᵢ</td><td id="E1">—</td><td id="E2">—</td><td id="Et">—</td></tr>
+          </tbody>
+        </table></div>
+        <p class="small">For a circle (A₁ = A₂ = 0), L̂ = 2π, B̂ = π, and Ê = 2π + βπ. When the two halves match, the energy asymmetry should vanish up to numerical error.</p>
+      </section>
+
+      <div class="twocol">
+        <section class="panel">
+          <div class="sectionhead"><h2>Curvature-weighted source moments</h2><span class="pill">origin = circle center</span></div>
+          <div class="tablewrap"><table>
+            <thead><tr><th>Moment</th><th>Dimensionless value</th></tr></thead>
+            <tbody>
+              <tr><td>Monopole M̂g</td><td id="mM">—</td></tr>
+              <tr><td>Dipole d̂ₓ</td><td id="mdx">—</td></tr>
+              <tr><td>Dipole d̂ᵧ</td><td id="mdy">—</td></tr>
+              <tr><td>Quadrupole Q̂xx</td><td id="qxx">—</td></tr>
+              <tr><td>Quadrupole Q̂yy</td><td id="qyy">—</td></tr>
+              <tr><td>Quadrupole Q̂zz</td><td id="qzz">—</td></tr>
+              <tr><td>Quadrupole Q̂xy</td><td id="qxy">—</td></tr>
+              <tr><td>Trace Q̂xx+Q̂yy+Q̂zz</td><td id="qtrace">—</td></tr>
+            </tbody>
+          </table></div>
+          <p class="small">The source moments use weight βκ̂²: M̂g = ∮βκ̂²dŝ, d̂ = ∮βκ̂²ŷdŝ, and Q̂ᵢⱼ = ∮βκ̂²(3ŷᵢŷⱼ − |ŷ|²δᵢⱼ)dŝ. Physical moments are recovered using the scale factors stated below.</p>
+        </section>
+        <section class="panel">
+          <div class="sectionhead"><h2>Potential check at ±y</h2><span class="pill" id="farTag">ρ / aₘₐₓ = —</span></div>
+          <div class="tablewrap"><table>
+            <thead><tr><th>Observation point</th><th>Direct integral P</th><th>Up to Q P₍₃₎</th><th>Relative error</th></tr></thead>
+            <tbody>
+              <tr><td>(0, +ρ, 0)</td><td id="pplus">—</td><td id="mplus">—</td><td id="errplus">—</td></tr>
+              <tr><td>(0, −ρ, 0)</td><td id="pminus">—</td><td id="mminus">—</td><td id="errminus">—</td></tr>
+            </tbody>
+          </table></div>
+          <div id="fieldHint" class="status"></div>
+          <p class="small">Both columns are positive coefficients P in Φ = −(Gτ/c²)P. “Direct” means numerical integration of the curvature-weighted source integral; “up to Q” includes monopole, dipole, and quadrupole terms.</p>
+        </section>
+      </div>
+
+      <section class="panel">
+        <h2>Equations and units used</h2>
+        <div class="formula">
+          ψ(u) = exp(1 − 1/sin²u), with ψ = 0 when sin u = 0<br>
+          dŝ/dθ = √(r² + r′²), &nbsp; κ̂ = |r² + 2r′² − rr″| / (r² + r′²)^(3/2)<br>
+          Êᵢ = ∫ᵢ (1 + βκ̂²/2) dŝ = L̂ᵢ + βB̂ᵢ<br>
+          Pdirect(x̂) = ∮ βκ̂² dŝ / |x̂ − ŷ|<br>
+          P₍₃₎(x̂) = M̂g/ρ + n·d̂/ρ² + nᵢQ̂ᵢⱼnⱼ/(2ρ³)
+        </div>
+        <p>Scaling back to physical units: E = τR₀Ê, M<sub>g</sub> = (τR₀/c²)M̂<sub>g</sub>, d = (τR₀²/c²)d̂, Q = (τR₀³/c²)Q̂, and Φ = −(Gτ/c²)P. The code integrates each hemisphere with composite Simpson quadrature (4096 subintervals per hemisphere).</p>
+      </section>
+    </main>
+  </div>
+  <footer>Exploratory numerical tool for the model in “Geometric Asymmetry and Gravitational Fields of Closed Elastic Loops.” It evaluates instantaneous loop snapshots; it does not solve the gradient-flow equation. Results describe the specified curvature-weighted quasi-static source model only, not predictions for a physical graviton or a complete relativistic string source.</footer>
+</div>
+<script>
+(() => {
+  'use strict';
+  const el = id => document.getElementById(id);
+  const NN = 4096; // Simpson intervals per hemisphere; even by construction.
+  const PI = Math.PI;
+  const fmt = (x, d=4) => Number.isFinite(x) ? x.toFixed(d) : '—';
+  const fmtSigned = (x,d=4) => Number.isFinite(x) ? (x>0?'+':'')+x.toFixed(d) : '—';
+
+  // Smooth bump and its analytic first/second derivatives.
+  // ψ = exp(1 - csc²u), (log ψ)' = 2 cos(u)/sin³(u).
+  function bump(u) {
+    const s = Math.sin(u), c = Math.cos(u);
+    if (Math.abs(s) < 1e-8) return [0,0,0];
+    const s2 = s*s;
+    const f = Math.exp(1 - 1/s2);
+    if (f === 0) return [0,0,0];
+    const l1 = 2*c/(s*s2);
+    const l2 = -2/s2 - 6*c*c/(s2*s2);
+    return [f, f*l1, f*(l1*l1+l2)];
+  }
+
+  function sample(theta, A1, N1, A2, N2) {
+    let A, N, u;
+    if (theta <= PI) { A=A1; N=N1; u=N1*theta; }
+    else { A=A2; N=N2; u=N2*(theta-PI); }
+    const [f,fu,fuu] = bump(u);
+    const r = 1 + A*f;
+    const rp = A*N*fu;
+    const rpp = A*N*N*fuu;
+    const ds = Math.sqrt(r*r + rp*rp);
+    const numer = Math.abs(r*r + 2*rp*rp - r*rpp);
+    const kappa = numer / Math.pow(r*r + rp*rp, 1.5);
+    return {theta,r,rp,rpp,ds,kappa,x:r*Math.cos(theta),y:r*Math.sin(theta)};
+  }
+
+  function integrateHemisphere(start, end, A, N, beta, rho, upper, A1,N1,A2,N2) {
+    const h=(end-start)/NN;
+    const sums={L:0,B:0,E:0,M:0,dx:0,dy:0,qxx:0,qyy:0,qzz:0,qxy:0,pplus:0,pminus:0};
+    let maxR=1;
+    for(let j=0;j<=NN;j++) {
+      const theta=start+h*j;
+      const s=sample(theta,A1,N1,A2,N2);
+      maxR=Math.max(maxR,s.r);
+      const w = (j===0 || j===NN) ? 1 : (j%2===1 ? 4 : 2);
+      const dens=1+0.5*beta*s.kappa*s.kappa;
+      const ds=s.ds;
+      const base=ds*w;
+      const energy=dens*base;
+      const gravSource=beta*s.kappa*s.kappa*base;
+      const rr=s.x*s.x+s.y*s.y;
+      const distPlus=Math.sqrt(s.x*s.x+(s.y-rho)*(s.y-rho));
+      const distMinus=Math.sqrt(s.x*s.x+(s.y+rho)*(s.y+rho));
+      sums.L += base;
+      sums.B += 0.5*s.kappa*s.kappa*base;
+      sums.E += energy;
+      sums.M += gravSource;
+      sums.dx += gravSource*s.x;
+      sums.dy += gravSource*s.y;
+      sums.qxx += gravSource*(3*s.x*s.x-rr);
+      sums.qyy += gravSource*(3*s.y*s.y-rr);
+      sums.qzz += gravSource*(-rr);
+      sums.qxy += gravSource*(3*s.x*s.y);
+      sums.pplus += gravSource/distPlus;
+      sums.pminus += gravSource/distMinus;
+    }
+    const factor=h/3;
+    Object.keys(sums).forEach(k=>sums[k]*=factor);
+    return {...sums,maxR};
+  }
+
+  function calculate(p) {
+    const top=integrateHemisphere(0,PI,p.A1,p.N1,p.beta,p.rho,true,p.A1,p.N1,p.A2,p.N2);
+    const bot=integrateHemisphere(PI,2*PI,p.A2,p.N2,p.beta,p.rho,false,p.A1,p.N1,p.A2,p.N2);
+    const keys=['L','B','E','M','dx','dy','qxx','qyy','qzz','qxy','pplus','pminus'];
+    const total={}; keys.forEach(k=>total[k]=top[k]+bot[k]);
+    const asym=(bot.E-top.E)/(top.E+bot.E);
+    const rho=p.rho;
+    const qPlus=total.M/rho+total.dy/(rho*rho)+total.qyy/(2*rho*rho*rho);
+    const qMinus=total.M/rho-total.dy/(rho*rho)+total.qyy/(2*rho*rho*rho);
+    const errPlus=Math.abs(qPlus-total.pplus)/Math.abs(total.pplus)*100;
+    const errMinus=Math.abs(qMinus-total.pminus)/Math.abs(total.pminus)*100;
+    return {top,bot,total,asym,qPlus,qMinus,errPlus,errMinus,maxR:Math.max(top.maxR,bot.maxR)};
+  }
+
+  function setText(id, text) { el(id).textContent=text; }
+  function drawLoop(p) {
+    const cx=260, cy=215, scale=82;
+    let coords=[];
+    const samples=1200;
+    for(let i=0;i<=samples;i++) {
+      const theta=2*PI*i/samples;
+      const s=sample(theta,p.A1,p.N1,p.A2,p.N2);
+      coords.push([cx+scale*s.x,cy-scale*s.y]);
+    }
+    const d=coords.map((pt,i)=>(i===0?'M':'L')+pt[0].toFixed(2)+','+pt[1].toFixed(2)).join(' ')+' Z';
+    el('loopPath').setAttribute('d',d);
+    el('loopFillPath').setAttribute('d',d);
+    let axes='';
+    axes += `<line x1="25" y1="215" x2="495" y2="215" stroke="#536580" stroke-opacity=".45"/>`;
+    axes += `<line x1="260" y1="24" x2="260" y2="406" stroke="#536580" stroke-opacity=".45"/>`;
+    axes += `<circle cx="260" cy="215" r="3" fill="#dce7fa"/>`;
+    el('axisLayer').innerHTML=axes;
+    let peaks='';
+    for(let k=0;k<p.N1;k++) {
+      const theta=(PI/2+k*PI)/p.N1;
+      const rr=1+p.A1;
+      const x=cx+scale*rr*Math.cos(theta), y=cy-scale*rr*Math.sin(theta);
+      peaks+=`<circle cx="${x}" cy="${y}" r="3.8" fill="#ffbd69" stroke="#201a13" stroke-width="1"/>`;
+    }
+    for(let k=0;k<p.N2;k++) {
+      const theta=PI+(PI/2+k*PI)/p.N2;
+      const rr=1+p.A2;
+      const x=cx+scale*rr*Math.cos(theta), y=cy-scale*rr*Math.sin(theta);
+      peaks+=`<circle cx="${x}" cy="${y}" r="3.8" fill="#ffbd69" stroke="#201a13" stroke-width="1"/>`;
+    }
+    el('peakLayer').innerHTML=peaks;
+    const matching=Math.abs(p.A1-p.A2)<1e-10&&p.N1===p.N2;
+    const circle=p.A1===0&&p.A2===0;
+    setText('shapeTag',circle?'reference circle':matching?'matching hemispheres':'asymmetric profile');
+  }
+
+  function render() {
+    const p={A1:+el('A1').value,N1:+el('N1').value,A2:+el('A2').value,N2:+el('N2').value,beta:+el('beta').value,rho:+el('rho').value};
+    setText('A1v',fmt(p.A1,2)); setText('N1v',p.N1);
+    setText('A2v',fmt(p.A2,2)); setText('N2v',p.N2);
+    setText('betav',fmt(p.beta,2)); setText('rhov',fmt(p.rho,1));
+    drawLoop(p);
+    const c=calculate(p), t=c.total, u=c.top, l=c.bot;
+    setText('totalL',fmt(t.L,4)); setText('totalE',fmt(t.E,4));
+    setText('asym',fmtSigned(c.asym,4)); setText('monopole',fmt(t.M,4)); setText('dipole',fmtSigned(t.dy,4));
+    setText('trace',fmt(t.qxx+t.qyy+t.qzz,7));
+    [['L1',u.L],['L2',l.L],['Lt',t.L],['B1',u.B],['B2',l.B],['Bt',t.B],['E1',u.E],['E2',l.E],['Et',t.E]].forEach(([id,v])=>setText(id,fmt(v,4)));
+    setText('mM',fmt(t.M,5)); setText('mdx',fmtSigned(t.dx,7)); setText('mdy',fmtSigned(t.dy,5));
+    setText('qxx',fmt(t.qxx,5)); setText('qyy',fmt(t.qyy,5)); setText('qzz',fmt(t.qzz,5)); setText('qxy',fmtSigned(t.qxy,7)); setText('qtrace',fmt(t.qxx+t.qyy+t.qzz,7));
+    setText('pplus',fmt(t.pplus,6)); setText('mplus',fmt(c.qPlus,6)); setText('errplus',fmt(c.errPlus,3)+'%');
+    setText('pminus',fmt(t.pminus,6)); setText('mminus',fmt(c.qMinus,6)); setText('errminus',fmt(c.errMinus,3)+'%');
+    const ratio=p.rho/c.maxR;
+    setText('farTag',`ρ / aₘₐₓ = ${fmt(ratio,2)}`);
+    let hint='';
+    if(ratio<2) hint='Observation radius is outside the loop, but not especially far away; higher multipoles may matter.';
+    else if(ratio<4) hint='Moderate far-field separation. Compare the errors before relying on the truncated expansion.';
+    else hint='Good scale separation for testing the first three multipole terms; this is still a truncated approximation.';
+    el('fieldHint').textContent=hint;
+    el('fieldHint').className='status '+(ratio>=4?'ok':'bad');
+  }
+
+  function preset(vals) {
+    for (const [id,v] of Object.entries(vals)) el(id).value=String(v);
+    render();
+  }
+  el('exampleBtn').addEventListener('click',()=>preset({A1:.8,N1:2,A2:.45,N2:4,beta:1,rho:10}));
+  el('symBtn').addEventListener('click',()=>preset({A1:.8,N1:2,A2:.8,N2:2,beta:1,rho:10}));
+  el('circleBtn').addEventListener('click',()=>preset({A1:0,N1:2,A2:0,N2:2,beta:1,rho:10}));
+  ['A1','N1','A2','N2','beta','rho'].forEach(id=>el(id).addEventListener('input',render));
+  render();
+})();
+</script>
+</body>
+</html>
