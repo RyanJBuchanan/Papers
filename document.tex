@@ -1,0 +1,1347 @@
+\documentclass{article}
+
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{babel}
+\usepackage{stackengine}
+\usepackage{tikz}
+% Smooth peak profile for plotting radial deformations.
+% The small cutoff avoids division by zero at peak boundaries.
+\pgfmathdeclarefunction{smoothpeak}{1}{%
+	\pgfmathparse{
+		exp(1-1/max(0.01,sin(#1)*sin(#1)))
+	}%
+}
+\usepackage{tikz-cd}
+\usepackage{quiver}
+\usepackage{mathrsfs}
+\usepackage{braket}
+\usepackage{float}
+\usepackage{scalerel}
+\usepackage{stackengine,wasysym}
+\usepackage{blindtext}
+\usepackage[final]{hyperref}
+\usepackage{bbold}
+\usepackage{geometry}
+\usepackage{cancel}
+\usepackage{booktabs}
+\usepackage{comment}
+
+\title{Geometric Asymmetry and Gravitational Fields of Closed Elastic Loops}
+\author{Ryan J. Buchanan\footnote{Active Inference Institute. \href{https://orcid.org/0009-0000-1253-0031}{ORCiD: 0009-0000-1253-0031}}}
+\date{October, 2026}
+
+\newtheorem{war}{Warning}
+\newtheorem{dn}{Definition}
+\newtheorem{as}{Assumption}
+\newtheorem{rk}{Remark}
+\newtheorem{eg}{Example}
+\newtheorem{pp}{Proposition}
+\newtheorem{ax}{Axiom}
+\newtheorem{tm}{Theorem}
+\newtheorem{lem}{Lemma}
+\newtheorem{nt}{Notation}
+\newtheorem{prop}{Property}
+\newtheorem{rc}{Recollection}
+\newtheorem{exc}{Exercise}
+
+
+\numberwithin{tm}{section}
+\numberwithin{dn}{section}
+\numberwithin{as}{section}
+\numberwithin{rk}{section}
+\numberwithin{lem}{section}
+\numberwithin{ax}{section}
+\numberwithin{pp}{section}
+\numberwithin{eg}{section}
+\numberwithin{war}{section}
+\numberwithin{equation}{section}
+\numberwithin{prop}{section}
+\numberwithin{nt}{section}
+\numberwithin{rc}{section}
+
+
+\newcommand\restr[2]{{% we make the whole thing an ordinary symbol
+		\left.\kern-\nulldelimiterspace % automatically resize the bar with \right
+		#1 % the function
+		\littletaller % pretend it's a little taller at normal size
+		\right|_{#2} % this is the delimiter
+}}
+
+\def\code#1{\texttt{#1}}
+
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+	We develop a geometric and variational framework for investigating
+	asymmetric closed elastic loops and their associated gravitational
+	fields. Modeling a loop as a smooth closed curve in Euclidean
+	three-space, we introduce an elastic energy combining line tension
+	and bending rigidity, and consider families of deformations that
+	allow the geometric asymmetry of the loop to be varied. An
+	effective line density derived from the elastic energy provides a
+	phenomenological source for a weak-field Newtonian potential, whose
+	far-field structure can be analyzed through multipole expansions.
+	We emphasize the distinction between this effective description
+	and a gravitational field derived from the full stress-energy tensor
+	of a relativistic string.
+	
+	We further model branes as embedded manifolds equipped with
+	admissible ambient-diffeomorphism flows. A joint energy functional
+	combining string, brane, and interaction energies defines a
+	variational framework for selecting compatible brane configurations
+	and motivates a coupled gradient-flow model for their dissipative
+	evolution. Finally, we discuss a controlled extension to immersed
+	loops with transverse self-intersections, identifying additional
+	issues involving gravitational self-interaction and topology-changing
+	reconnection. The resulting framework provides a mathematical
+	setting for studying geometric asymmetry, effective gravitational
+	fields, and coupled string--brane deformation, without presupposing
+	a fundamental physical interpretation of the model.
+\end{abstract}
+
+\pagebreak
+
+\tableofcontents
+
+\section{Introduction}
+Loop spaces arestandard objects in algebraic topology.
+While the theory of infinite loop spaces and its connections with
+stable homotopy theory are initially developed, for example, in
+\cite{Adams}, loop-space methods also arise in mathematical physics.
+Schreiber studies their role in supersymmetric quantum
+mechanics, superstring background fields, and nonabelian
+strings \cite{Schreiber}.
+
+Let $(X,x_0)$ be a pointed topological space, and let
+$s_0\in S^1$ be a chosen basepoint. The based loop space
+of $X$ is
+\begin{equation}
+	\Omega_{x_0}X
+	\coloneq
+	\operatorname{Map}_*
+	\bigl((S^1,s_0),(X,x_0)\bigr).
+\end{equation}
+The free loop space is
+\begin{equation}
+	LX
+	\coloneq
+	\operatorname{Map}(S^1,X).
+\end{equation}
+
+At a fixed worldsheet time, a closed-string configuration
+can be represented kinematically by a map
+$\gamma:S^1\to X$, whereas an open-string configuration
+can be represented by a map $\gamma:[0,1]\to X$,
+together with appropriate endpoint conditions. Thus, the
+free loop space provides a natural configuration space for
+closed strings. A based loop space imposes the additional
+condition that a chosen point of the circle maps to $x_0$.\footnote{A natural question we ask is when exactly it is appropriate to use the latter construction; for instance, if and when we have a metric which varies along the string, or in other cases where $x_0$ has a manifest physical interpretation.} 
+
+In perturbative string theory, the closed-string spectrum
+contains a massless spin-two state interpreted as the
+graviton \cite{Green,Polchinski,Zwiebach}. This fact
+motivates our investigation of geometric loop
+configurations and their possible gravitational effects.
+However, a loop configuration and a graviton state are
+distinct objects, and their relationship requires a
+separate physical model.
+
+In this paper, we begin with a geometric model of closed
+elastic loops.\footnote{Investiagions into elastic curves, or ``cables" as they were called in \cite{Atai} are well-documented.} We investigate how their shape, curvature,
+and energy distribution vary under deformation, and how
+these quantities may be used to calculate their
+gravitational fields in a specified approximation.
+
+Strings are not the only extended objects considered in
+string theory. D-branes provide boundary conditions for
+open strings, while more general $p$-branes are extended
+objects with $p$ spatial dimensions. For the present geometric model, let $X$ be a smooth
+Riemannian manifold and let an $n$-brane be represented
+at each stage of its evolution by an embedded
+$n$-dimensional submanifold $Y_t\subset X$. We regard
+the brane as a dynamical geometric object and describe
+its admissible deformations through a specified
+collection of ambient diffeomorphism flows.
+
+
+The choice of ambient diffeomorphisms is motivated by two considerations. First, a smooth diffeomorphism of the ambient manifold transports the brane without changing its diffeomorphism type. In particular, a compact genus-zero brane remains genus zero throughout any admissible flow. Second, the smoothness of the deformation is essential for the geometric analysis that follows: the quantities of interest, including curvature and bending energy, depend on differential information that an arbitrary homeomorphism need not preserve. The collection of admissible flows therefore serves to specify which geometric deformations are permitted within the model. Requiring the flows to be defined on a common time interval, with the identity transformation as their initial condition, allows each evolution to be understood relative to a fixed reference configuration. Different choices of admissible flows may impose different restrictions on the deformation of the brane, and hence determine which configurations can be reached from the initial embedding. 
+\begin{war}
+	At this stage, we do not prescribe a particular equation of motion or require the brane to follow an energy-minimizing trajectory. The flow set instead records the admissible geometric evolutions independently of the dynamical law that may subsequently select among them. This distinction allows us to introduce a metric-dependent energy functional later and investigate its critical points and induced evolution without building the desired dynamics into the definition of a brane from the outset.
+\end{war}
+
+Since we are building flow sets into the definition of a brane (Def.~\ref{brane}), the geometry of allowable deformations is strictly controlled from the outset. So, given a $\Phi_t \in \mathscr{F}_\mathfrak{B}$, there is guarunteed to be at least one brane geometry $Y_t$ for our dynamics. However, we also wish to address the additional deformations of the string $\gamma$ itself, which possesses its own geometric degrees of freedom. We represent a closed-string configuration by a regular loop $\gamma:S^1\to X$ and allow this loop to deform independently of the brane. In particular, the brane flow does not determine the string's shape, curvature, or distribution of elastic energy. These quantities must be accounted for by a separate family of loop configurations. Consequently, the configurations of interest consist of a string and a brane whose respective deformations
+are governed by distinct admissibility conditions. Their interaction is then determined by a common
+geometric functional, which couples the string's elastic energy to the evolving brane geometry.
+
+Let us restrict attention to closed strings without
+self-intersections. Accordingly, each string configuration is
+represented by a smooth embedding
+\[
+\gamma:S^1\hookrightarrow X.
+\]
+This condition ensures that the string is a regular embedded
+curve, so its geometric quantities, including arclength and
+curvature, are well-defined along the entire loop. We therefore
+take the initial configuration space of strings to be
+$\operatorname{Emb}(S^1,X)$, rather than the larger space of
+immersed loops.
+
+This restriction is imposed purely for mathematical convenience; self-intersecting strings are reserved for a later extension of the theory  in \S\ref{sec:self-intersections}. There, we may enlarge the configuration space to include immersed loops with prescribed classes of singularities, such as finitely many transverse double points,
+subject to suitable regularity conditions. Such an extension will require us to examine how self-intersections affect the energy functional, the admissible deformations, and the resulting gravitational field.
+
+\section{Geometric Setup and Elastic-Loop Model}
+\label{sec:geometric-model}
+
+\subsection{Configuration Space of Strings and Branes}
+\label{subsec:configuration-space}
+
+Let $(X,g)$ be a smooth Riemannian manifold. We initially
+restrict attention to closed strings represented by smooth
+embeddings
+\[
+\gamma:S^1\hookrightarrow X,
+\]
+thereby excluding self-intersections from the initial model.
+
+We regard a brane as an embedded submanifold whose admissible
+geometric deformations are specified by a collection of
+ambient diffeomorphism flows. This approach is inspired by
+the theory of diffeomorphic surface flows developed in
+\cite{ZhangEtAl}.
+
+\begin{dn}[Brane] \label{brane}
+	Let $X$ be a smooth manifold and let $\Sigma^n$ be a smooth
+	$n$-dimensional manifold. An $n$-brane $\mathfrak{B}^n$ in $X$
+	is a triple
+	\[
+	\mathfrak{B}^n
+	=
+	(\Sigma^n,\iota_0,\mathscr{F}_{\mathfrak{B}}),
+	\]
+	where $\iota_0:\Sigma^n\hookrightarrow X$ is a smooth
+	embedding and $\mathscr{F}_{\mathfrak{B}}$ is a specified
+	collection of smooth flows of ambient diffeomorphisms
+	$\Phi_t:X\to X$, defined on a common time interval $I$
+	containing $0$, with $\Phi_0=\operatorname{id}_X$.
+	
+	Each flow induces a family of embeddings
+	\[
+	\iota_t=\Phi_t\circ\iota_0,
+	\qquad
+	Y_t=\iota_t(\Sigma^n)\subset X.
+	\]
+	The collection $\mathscr{F}_{\mathfrak{B}}$ is called the
+	\emph{flow set} of $\mathfrak{B}^n$ and specifies its
+	admissible geometric deformations. Every such deformation
+	preserves the diffeomorphism type of $\Sigma^n$.
+\end{dn}
+
+We now consider the relationship between the brane's
+admissible deformations and the geometry of a closed string.
+Let
+\[
+q=(\gamma,\iota)
+\]
+denote a configuration consisting of a smooth embedded loop
+$\gamma:S^1\hookrightarrow X$ and a brane embedding
+$\iota:\Sigma^n\hookrightarrow X$.
+
+The flow set $\mathscr{F}_{\mathfrak{B}}$ determines the
+admissible geometric realizations of the brane. Writing
+$Y_0=\iota_0(\Sigma^n)$, an ambient diffeomorphism
+$\Phi_t:X\to X$ induces
+\[
+\iota_t=\Phi_t\circ\iota_0,
+\qquad
+Y_t=\Phi_t(Y_0).
+\]
+The resulting family remains within the ambient-diffeomorphism
+orbit of the initial brane, and hence preserves its
+diffeomorphism type.
+
+The admissibility of a brane configuration does not, however,
+determine whether it is geometrically compatible with a given
+string. To express this dependence, we consider a joint energy
+functional
+\[
+\mathcal{J}[\gamma,\iota]
+=
+\mathcal{E}_{\mathrm{str}}[\gamma]
++\mathcal{E}_{\mathrm{br}}[\iota]
++\mathcal{E}_{\mathrm{int}}[\gamma,\iota].
+\]
+The interaction term couples the string's geometry to the
+current brane configuration. For a fixed string, this
+functional provides a criterion for comparing admissible
+brane embeddings. In particular, we may seek configurations
+that minimize the brane and interaction energies over the
+orbit generated by $\mathscr{F}_{\mathfrak{B}}$, whenever
+such minimizers exist.
+
+The string and brane are permitted to deform independently.
+This independence is necessary if their relative position
+and incidence are to vary during an evolution. Their motions
+may nevertheless remain coupled through $\mathcal{J}$.
+We distinguish, accordingly, between the flow set, which
+specifies admissible brane deformations, and the dynamical
+law, which determines how the string and brane evolve
+together. Our master equation for the deformation of $\mathfrak{B}$ is Eq.~\eqref{Master}.
+
+\subsection{A Four-Parameter Family of Closed Loops}
+\label{subsec:loop-family}
+
+For the initial geometric model, we take $X=\mathbb{R}^3$
+and restrict the string to a fixed plane. We normalize the reference loop to be the unit circle.
+Divide its angular parameter domain into two hemispheres,
+$I_1=[0,\pi]$ and $I_2=[\pi,2\pi]$. We introduce four
+parameters
+\[
+(A_1,N_1,A_2,N_2),
+\]
+where $A_i\geq 0$ controls the peak height on hemisphere $i$,
+and $N_i\in\mathbb{N}$ controls its number of peaks.
+
+To obtain a smooth family of curves, define the periodic
+profile
+\begin{equation}
+	\psi(u)=
+	\begin{cases}
+		\exp\!\left(1-\dfrac{1}{\sin^2 u}\right),
+		& \sin u\neq 0,\\[6pt]
+		0,  & \sin u=0.
+	\end{cases}
+\end{equation}
+This profile is smooth, has maximum value $1$, and vanishes
+to all orders at integer multiples of $\pi$.
+
+Define the radial function
+\[
+r(\theta)=
+\begin{cases}
+	1+A_1\psi(N_1\theta),
+	& 0\leq\theta\leq\pi,\\[4pt]
+	1+A_2\psi(N_2(\theta-\pi)),
+	& \pi\leq\theta\leq 2\pi.
+\end{cases}
+\]
+The corresponding closed curve is
+\[
+\gamma(\theta)=
+\bigl(r(\theta)\cos\theta,\,
+r(\theta)\sin\theta,\,0\bigr),
+\qquad 0\leq\theta\leq 2\pi.
+\]
+The maximum radius on hemisphere $i$ is $1+A_i$, and the
+angular spacing between adjacent peaks is
+\[
+\Delta_i=\frac{\pi}{N_i}.
+\]
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[
+		scale=1.2,
+		line cap=round,
+		line join=round
+		]
+		
+		% Reference unit circle
+		\draw[
+		gray!65,
+		densely dashed,
+		line width=0.7pt
+		]
+		(0,0) circle (1);
+		
+		% Coordinate axes
+		\draw[gray!25, thin]
+		(-2.05,0) -- (2.05,0);
+		\draw[gray!25, thin]
+		(0,-1.65) -- (0,1.65);
+		
+		% Upper hemisphere: A_1 = 0.8, N_1 = 2
+		% Radial profile: r(theta) = 1 + A_1 psi(N_1 theta)
+		\draw[
+		orange!85!black,
+		line width=1.3pt
+		]
+		plot[
+		variable=\t,
+		domain=0:180,
+		samples=721
+		]
+		(
+		{(1+0.8*smoothpeak(2*\t))*cos(\t)},
+		{(1+0.8*smoothpeak(2*\t))*sin(\t)}
+		);
+		
+		% Lower hemisphere: A_2 = 0.45, N_2 = 4
+		% Radial profile: r(theta) = 1 + A_2 psi(N_2(theta-pi))
+		\draw[
+		blue!70!black,
+		line width=1.3pt
+		]
+		plot[
+		variable=\t,
+		domain=180:360,
+		samples=961
+		]
+		(
+		{(1+0.45*smoothpeak(4*(\t-180)))*cos(\t)},
+		{(1+0.45*smoothpeak(4*(\t-180)))*sin(\t)}
+		);
+		
+		% Mark the upper peak locations (radius 1.8)
+		\foreach \ang in {45,135} {
+			\fill[orange!85!black]
+			({1.8*cos(\ang)},{1.8*sin(\ang)})
+			circle (1.7pt);
+		}
+		
+		% Mark the lower peak locations (radius 1.45)
+		\foreach \ang in {202.5,247.5,292.5,337.5} {
+			\fill[blue!70!black]
+			({1.45*cos(\ang)},{1.45*sin(\ang)})
+			circle (1.7pt);
+		}
+		
+		% Reference radius
+		\draw[gray!75, thin]
+		(0,0) -- (1,0);
+		
+		\node[
+		font=\scriptsize,
+		fill=white,
+		inner sep=1.5pt
+		] at (0.48,0.13) {$r=1$};
+		
+		% Hemisphere labels
+		\node[
+		font=\small\bfseries,
+		text=orange!85!black
+		] at (0,2.05)
+		{$A_1=0.8,\quad N_1=2$};
+		
+		\node[
+		font=\small\bfseries,
+		text=blue!70!black
+		] at (0,-2.05)
+		{$A_2=0.45,\quad N_2=4$};
+		
+		% Angular spacing annotations
+		\node[
+		font=\small,
+		fill=white,
+		inner sep=1.5pt
+		] at (1.75,1.45)
+		{$\Delta_1=\pi/2$};
+		
+		\node[
+		font=\small,
+		fill=white,
+		inner sep=1.5pt
+		] at (1.75,-1.65)
+		{$\Delta_2=\pi/4$};
+		
+	\end{tikzpicture}
+	
+	\caption{An asymmetric closed loop with independently
+		controlled peak heights and spacings on its two
+		hemispheres. The dashed circle is the unit-circle
+		reference configuration. Here $A_1=0.8$, $N_1=2$,
+		$A_2=0.45$, and $N_2=4$, giving maximum radii
+		$1+A_1=1.8$ and $1+A_2=1.45$, respectively.}
+	
+	\label{fig:asymmetric-closed-loop}
+\end{figure}
+
+Our motivation for splitting the ``graviton" (closed loop) into two hemispheres, is that gravitational ``charges" should act along an an axis, with the direction being deterimined by the asymmetry between the two halves. Our four-parameter setup is a simplified toy model, as we do not expect the deformations to be distributed so evenly.
+
+
+\subsection{Geometric Energy and Energy Asymmetry}
+\label{subsec:energy-asymmetry}
+
+Let primes denote derivatives with respect to $\theta$.
+The arclength element of the radial curve is
+\[
+ds=\sqrt{r^2+(r')^2}\,d\theta.
+\]
+Its curvature magnitude is
+\[
+\kappa(\theta)=
+\frac{\left|r^2+2(r')^2-rr''\right|}
+{\left(r^2+(r')^2\right)^{3/2}}.
+\]
+
+We consider the elastic-loop energy
+\begin{equation}
+	\label{eq:string-energy}
+	E_{\mathrm{str}}[\gamma]
+	=
+	\int_\gamma
+	\left(\tau+\frac{\kappa_b}{2}\kappa^2\right)ds,
+\end{equation}
+where $\tau>0$ is the line-tension coefficient and
+$\kappa_b>0$ is the bending-rigidity coefficient.
+
+For $i\in\{1,2\}$, let $E_i$ denote the energy contributed
+by hemisphere $I_i$. Explicitly,
+\begin{equation}
+	\label{eq:hemisphere-energy}
+	E_i
+	=
+	\int_{I_i}
+	\left(\tau+\frac{\kappa_b}{2}\kappa(\theta)^2\right)
+	\sqrt{r(\theta)^2+r'(\theta)^2}\,d\theta.
+\end{equation}
+The total energy is
+\begin{equation}
+	\label{eq:total-energy}
+	E_{\mathrm{total}}=E_1+E_2.
+\end{equation}
+
+To quantify the unevenness of the energy distribution, we
+define the normalized hemispheric energy asymmetry by
+\begin{equation}
+	\label{eq:energy-asymmetry}
+	\mathcal{A}_E
+	=
+	\frac{E_2-E_1}{E_1+E_2},
+\end{equation}
+provided $E_1+E_2>0$. Thus $\mathcal{A}_E=0$ when the two
+hemispheres contribute equal energy, while its sign records
+which hemisphere contributes more. The dependence of
+$E_{\mathrm{total}}$ and $\mathcal{A}_E$ on the four shape
+parameters will be investigated numerically in \S\ref{subsec:numerical-example}.
+
+
+\subsection{From Geometric Energy to Gravitational Fields}
+\label{subsec:gravity-preview}
+
+The preceding construction determines the loop geometry and
+its modeled energy distribution. To investigate its
+gravitational influence, we must additionally specify how
+this energy sources a gravitational field.
+
+In the weak-field approximation, we will first consider an
+effective line-mass density derived from the chosen energy
+density. We will then calculate the gravitational potential
+and examine its multipole expansion, distinguishing the
+contribution of total mass from the effects of the spatial
+distribution of energy.
+
+The gravitational model and its assumptions are developed
+in Section~\ref{sec:multipoles}.
+
+\section{Multipole Analysis}
+\label{sec:multipoles}
+
+We now investigate how the geometric energy distribution of a
+closed elastic loop determines its gravitational field. Our
+starting point is the effective energy functional
+\eqref{eq:string-energy}. Since the loop is an extended source,
+its gravitational influence depends not only on its total energy,
+but also on the spatial distribution of that energy. Multipole
+analysis provides a systematic means of separating these
+contributions \cite{PoissonWill2014Gravity}.
+
+Throughout this section, we work in a weak-field, quasi-static
+approximation. We treat the energy density derived from
+\eqref{eq:string-energy} as an effective source for a Newtonian
+gravitational potential. This is a simplifying assumption of
+our geometric model, rather than a complete relativistic
+description of a string source.
+
+\subsection{Effective Line-Mass Density}
+
+Let $\gamma:S^1\to\mathbb{R}^3$ be a regular closed loop,
+parametrized by arclength $s$, and let
+$\kappa(s)$ denote its curvature. Define the geometric energy
+density per unit length by
+\begin{equation}
+	\varepsilon_{\mathrm{str}}(s)
+	\coloneq
+	\tau+\frac{\kappa_b}{2}\kappa(s)^2.
+\end{equation}
+The total string energy is consequently
+\begin{equation}
+	E_{\mathrm{total}}
+	=
+	\oint_\gamma
+	\varepsilon_{\mathrm{str}}(s)\,ds.
+\end{equation}
+
+For the purposes of the present approximation, we associate
+to this energy density the effective line-mass density
+\begin{equation}
+	\label{eq:effective-line-mass}
+	\lambda_{\mathrm{eff}}(s)
+	\coloneq
+	\frac{\varepsilon_{\mathrm{str}}(s)}{c^2},
+\end{equation}
+where $c$ denotes the speed of light. The corresponding
+effective mass is
+\begin{equation}
+	\label{eq:effective-total-mass}
+	M_{\mathrm{eff}}
+	=
+	\oint_\gamma \lambda_{\mathrm{eff}}(s)\,ds
+	=
+	\frac{E_{\mathrm{total}}}{c^2}.
+\end{equation}
+
+Equation~\eqref{eq:effective-line-mass} provides a convenient
+bridge between the geometric energy model and Newtonian
+gravity. A physically complete relativistic treatment would
+require the stress-energy tensor of the string, including
+its tension and any dynamical contributions
+\cite{ChernoffFlanaganWardell2019StringBackreaction}.
+
+\subsection{Newtonian Gravitational Potential}
+
+Choose a fixed origin $O\in\mathbb{R}^3$ and write
+$\mathbf{y}(s)$ for the position vector of the string relative
+to this origin. In the effective Newtonian model, the
+gravitational potential at an observation point
+$\mathbf{x}\notin\gamma(S^1)$ is
+\begin{equation}
+	\label{eq:newtonian-loop-potential}
+	\Phi(\mathbf{x})
+	=
+	-G\oint_\gamma
+	\frac{\lambda_{\mathrm{eff}}(s)}
+	{|\mathbf{x}-\mathbf{y}(s)|}\,ds,
+\end{equation}
+where $G$ is Newton's gravitational constant. The corresponding
+gravitational acceleration is
+\begin{equation}
+	\mathbf{g}(\mathbf{x})=-\nabla\Phi(\mathbf{x}).
+\end{equation}
+
+Equation~\eqref{eq:newtonian-loop-potential} makes explicit
+that the gravitational field depends on the spatial
+distribution of the loop's energy, rather than solely on
+its geometric asymmetry or its maximum radial extent.
+
+\subsection{The Multipole Expansion}
+
+Let
+\[
+r=|\mathbf{x}|,
+\qquad
+\mathbf{n}=\frac{\mathbf{x}}{r},
+\]
+and suppose the origin is chosen so that
+\[
+a_\gamma
+\coloneq
+\sup_{s\in S^1}|\mathbf{y}(s)|
+\]
+is finite. In the far-field regime $r\gg a_\gamma$, we may
+expand the Newtonian kernel as
+\begin{equation}
+	\label{eq:kernel-multipole-expansion}
+	\frac{1}{|\mathbf{x}-\mathbf{y}|}
+	=
+	\frac{1}{r}
+	+\frac{\mathbf{n}\cdot\mathbf{y}}{r^2}
+	+\frac{3(\mathbf{n}\cdot\mathbf{y})^2-|\mathbf{y}|^2}
+	{2r^3}
+	+O\!\left(\frac{|\mathbf{y}|^3}{r^4}\right).
+\end{equation}
+Substituting \eqref{eq:kernel-multipole-expansion} into
+\eqref{eq:newtonian-loop-potential} yields the first three
+multipole contributions:
+\begin{equation}
+	\label{eq:loop-multipole-potential}
+	\Phi(\mathbf{x})
+	=
+	-G\left[
+	\frac{M_{\mathrm{eff}}}{r}
+	+\frac{\mathbf{n}\cdot\mathbf{d}}{r^2}
+	+\frac{n_iQ_{ij}n_j}{2r^3}
+	+O\!\left(
+	\frac{M_{\mathrm{eff}}a_\gamma^3}{r^4}
+	\right)
+	\right].
+\end{equation}
+Here and below, repeated Cartesian indices are summed.
+
+The moments appearing in \eqref{eq:loop-multipole-potential}
+are defined as follows.
+
+\paragraph{Monopole.}
+The monopole is the total effective mass
+\begin{equation}
+	M_{\mathrm{eff}}
+	=
+	\oint_\gamma\lambda_{\mathrm{eff}}(s)\,ds.
+\end{equation}
+It determines the leading $r^{-1}$ contribution to the
+potential and is insensitive to the detailed arrangement of
+the energy along the loop.
+
+\paragraph{Dipole.}
+The mass-dipole vector is
+\begin{equation}
+	\label{eq:loop-dipole}
+	\mathbf{d}
+	=
+	\oint_\gamma
+	\lambda_{\mathrm{eff}}(s)\mathbf{y}(s)\,ds.
+\end{equation}
+It records the first spatial moment of the energy distribution
+relative to the chosen origin. If the origin is placed at the
+effective centre of mass,
+\begin{equation}
+	\mathbf{y}_{\mathrm{cm}}
+	=
+	\frac{1}{M_{\mathrm{eff}}}
+	\oint_\gamma
+	\lambda_{\mathrm{eff}}(s)\mathbf{y}(s)\,ds,
+\end{equation}
+then $\mathbf{d}=0$ by construction. Thus, a nonzero dipole
+relative to the centre of the reference circle can reflect
+a displacement of the energy centroid, rather than an
+intrinsic shape asymmetry alone.
+
+\paragraph{Quadrupole.}
+The trace-free mass-quadrupole tensor is defined by
+\begin{equation}
+	\label{eq:loop-quadrupole}
+	Q_{ij}
+	=
+	\oint_\gamma
+	\lambda_{\mathrm{eff}}(s)
+	\left(
+	3y_i(s)y_j(s)
+	-|\mathbf{y}(s)|^2\delta_{ij}
+	\right)ds,
+\end{equation}
+where $\delta_{ij}$ is the Kronecker delta. By construction,
+$Q_{ii}=0$. The quadrupole captures directional information
+about the spatial distribution of the effective mass that
+is absent from the monopole. Its contribution to the
+potential decays as $r^{-3}$.
+
+Higher multipoles describe progressively finer features of
+the source distribution. Their contributions are suppressed
+by additional powers of the ratio $a_\gamma/r$ in the
+far-field expansion.
+
+\subsection{Relation to Hemispheric Energy Asymmetry}
+
+Recall the normalized energy asymmetry
+$\mathcal{A}_E$ defined in
+\eqref{eq:energy-asymmetry}. This quantity compares the
+integrated energies of the two hemispheres, whereas the
+multipole moments depend on the full spatial distribution
+of energy. Consequently, $\mathcal{A}_E$ does not determine
+the dipole or quadrupole by itself.
+
+Nevertheless, the two descriptions provide complementary
+information. The total energy determines the monopole in
+our effective model, while changes in peak heights and
+spacings alter the spatial weighting in
+\eqref{eq:loop-dipole} and \eqref{eq:loop-quadrupole}.
+We can therefore investigate whether variations of
+$(A_1,N_1,A_2,N_2)$ produce systematic changes in the
+multipole moments.
+
+For this comparison, we retain the centre of the reference
+unit circle as a fixed origin. We may additionally compute
+the moments about the effective centre of mass to distinguish
+a displacement of the energy centroid from changes in the
+loop's intrinsic energy distribution.
+
+\subsection*{Scope and Limitations}
+
+The expansion \eqref{eq:loop-multipole-potential} is useful
+when the observation point is far from the loop relative
+to its overall size. If a brane lies close to the string,
+the expansion may converge slowly or provide an inadequate
+approximation; in that case, the potential
+\eqref{eq:newtonian-loop-potential} should be evaluated
+directly.
+
+Moreover, this section concerns a quasi-static Newtonian
+potential. Multipole expansions of gravitational radiation
+involve time-dependent source moments and additional
+relativistic considerations \cite{Thorne1980MultipoleRadiation}.
+They are not interchangeable with the static potential
+expansion used here.
+
+Finally, the effective line-mass density
+\eqref{eq:effective-line-mass} is a modeling assumption.
+The present calculation does not establish that geometric
+asymmetry creates gravity or that the gravitational force
+is proportional to $\mathcal{A}_E$. Rather, it provides
+a framework for testing how the energy distribution
+predicted by our elastic-loop model affects the resulting
+approximate gravitational field.
+
+```latex
+\section{Brane Deformations and Diffeomorphic Minimization}
+\label{sec:brane-deformations}
+
+Let \(X\) be a smooth manifold, let
+\(\iota_0:\Sigma^n\hookrightarrow X\) be an initial brane embedding,
+and let \(\mathcal F_{\mathfrak B}\) denote the brane's flow set (Def.~\ref{brane}).
+Each admissible ambient diffeomorphism \(\Phi:X\to X\) determines
+a deformed embedding
+\[
+\iota=\Phi\circ\iota_0.
+\]
+We write
+\[
+\mathcal O_{\mathfrak B}(\iota_0)
+=
+\left\{
+\Phi\circ\iota_0
+\;\middle|\;
+\Phi \text{ is an admissible endpoint of a flow in }
+\mathcal F_{\mathfrak B}
+\right\}
+\]
+for the family of brane configurations reachable from
+\(\iota_0\) through the prescribed deformations. Since these
+deformations arise from ambient diffeomorphisms, they preserve the
+brane's diffeomorphism type, keeping stable any potential Aharanov--Bohm-like properties, and remaining topologically stable.
+
+Fix a smooth closed string
+\(\gamma:S^1\hookrightarrow X\). The flow set determines which
+brane configurations are admissible, but does not by itself specify
+which configuration is preferred relative to \(\gamma\). To express
+this dependence, let
+\(\mathcal E_{\mathrm{br}}[\iota]\) denote the brane energy and
+let \(\mathcal E_{\mathrm{int}}[\gamma,\iota]\) denote the
+string--brane interaction energy. We seek a brane configuration
+minimizing their sum over the admissible orbit:
+\begin{equation} \label{Master}
+	\boxed{
+		\iota^\ast(\gamma)
+		\in
+		\underset{\iota\in\mathcal O_{\mathfrak B}(\iota_0)}
+		{\operatorname{arg\,min}}
+		\left(
+		\mathcal E_{\mathrm{br}}[\iota]
+		+
+		\mathcal E_{\mathrm{int}}[\gamma,\iota]
+		\right).
+	}
+\end{equation}
+Here the string is held fixed while the brane configuration is
+selected. The dependence of \(\iota^\ast\) on \(\gamma\) expresses
+the possibility that different string geometries favor different
+brane configurations. The interaction term is the mechanism through
+which this geometric compatibility enters the minimization problem.
+
+The formulation is conditional on the existence of a minimizer:
+the admissible orbit need not be compact, and the energy need not
+attain its infimum without additional hypotheses. If several
+configurations attain the same minimum, the expression
+\(\operatorname{arg\,min}\) denotes the full set of minimizers, and
+\(\iota^\ast(\gamma)\) is any one of its elements. Thus the flow set
+specifies the allowed deformations, whereas the energy functional
+selects energetically preferred configurations whenever a minimum
+exists.
+
+This selection principle does not, by itself, prescribe a time
+evolution. A dynamical model would additionally specify how the
+string and brane respond to their combined energy, allowing their
+geometries to evolve together rather than minimizing over the brane
+with the string held fixed. Here is one possible example:
+\begin{eg}[Gradient-flow coupling]
+	Let
+	\[
+	\mathcal J[\gamma,\iota]
+	=
+	\mathcal E_{\mathrm{str}}[\gamma]
+	+
+	\mathcal E_{\mathrm{br}}[\iota]
+	+
+	\mathcal E_{\mathrm{int}}[\gamma,\iota]
+	\]
+	be the total energy of a string--brane configuration
+	\(q=(\gamma,\iota)\). Choose a product metric on the configuration
+	space, with metrics \(\mathsf G_{\mathrm{str}}\) and
+	\(\mathsf G_{\mathrm{br}}\) on the string and brane components,
+	respectively. One possible dynamical coupling is the negative
+	gradient flow
+	\[
+	\begin{aligned}
+		\partial_t\gamma_t
+		&=-\operatorname{grad}_{\gamma}
+		\mathcal J[\gamma_t,\iota_t],\\
+		\partial_t\iota_t
+		&=-\operatorname{grad}_{\mathcal O_{\mathfrak B},\iota}
+		\mathcal J[\gamma_t,\iota_t],
+	\end{aligned}
+	\]
+	where the brane gradient is taken along the admissible
+	diffeomorphic orbit
+	\(\mathcal O_{\mathfrak B}(\iota_0)\). Thus the brane evolves
+	only through permitted deformations, while the string is free
+	to change its shape.
+	
+	The interaction energy
+	\(\mathcal E_{\mathrm{int}}[\gamma,\iota]\) couples the two
+	evolution equations: changes in the string geometry affect the
+	brane's energy landscape, and changes in the brane geometry
+	affect the forces acting on the string. Whenever this gradient
+	flow is well-defined, the total energy satisfies
+	\[
+	\frac{d}{dt}\mathcal J[\gamma_t,\iota_t]
+	=
+	-\|\operatorname{grad}_{\gamma}\mathcal J\|_{\mathsf G_{\mathrm{str}}}^{2}
+	-\|\operatorname{grad}_{\mathcal O_{\mathfrak B},\iota}\mathcal J\|_{\mathsf G_{\mathrm{br}}}^{2}
+	\leq 0.
+	\]
+	Hence the coupled evolution dissipates total energy, subject
+	to the chosen metric and admissibility constraints. This is
+	one possible variational model rather than a uniquely determined
+	physical law.
+\end{eg}
+
+\begin{rk}
+	The use of a gradient flow is motivated by established methods
+	in geometric analysis and elasticity. Elastic curves have been
+	studied through gradient flows of curvature-dependent energies
+	\cite{DziukKuwertSchaetzle2002}, while diffeomorphic surface
+	flows provide an energy-minimizing framework for topology-preserving
+	surface evolution \cite{ZhangEtAl}. Coupled variational treatments
+	of elastic curves and surfaces also demonstrate how interactions
+	between geometric objects can be incorporated into a common energy
+	\cite{Atai}. Motivated by these approaches, we propose the negative
+	gradient flow of \(\mathcal J\) as one possible coupling of the
+	string and brane. This choice defines a dissipative relaxation
+	model; it is not asserted to be the unique or fundamental physical
+	law governing their dynamics.
+\end{rk}
+
+\section{Self-Intersections and Controlled Extensions}
+\label{sec:self-intersections}
+
+The preceding analysis assumes that the string is a smooth embedded
+closed curve \(\gamma:S^1\hookrightarrow X\). This assumption
+provides a regular geometric setting for the elastic energy, the
+induced gravitational field, and the coupled string--brane
+variational problem. We now discuss how the framework may be
+extended to admit controlled self-intersections.
+
+The four-parameter planar model introduced above does not itself
+admit self-intersections. Indeed, for a positive radial profile
+\(r(\theta)>0\), the parametrization
+\[
+\gamma(\theta)
+=
+\bigl(r(\theta)\cos\theta,\,
+r(\theta)\sin\theta,\,0\bigr)
+\]
+is injective on \(S^1\). Thus self-intersecting configurations
+require an enlargement of the admissible class of string geometries.
+
+For this purpose, we replace the embedding condition by the
+assumption that \(\gamma:S^1\to X\) is a smooth immersion, so that
+its derivative never vanishes, while allowing distinct parameter
+values to map to the same spatial point. Define the set of
+double-point pairs by
+\[
+\mathcal D(\gamma)
+=
+\left\{
+\{s_1,s_2\}\subset S^1
+\;\middle|\;
+s_1\neq s_2,\quad
+\gamma(s_1)=\gamma(s_2)
+\right\}.
+\]
+As a first controlled extension, we restrict attention to immersions
+for which \(\mathcal D(\gamma)\) is finite, each self-intersection
+has exactly two preimages, and the two branches have distinct
+tangent directions. In the planar setting, this means that the
+branches cross with nonparallel tangents. Triple intersections,
+tangential contacts, and singular points of the parametrized curve
+are excluded at this stage.
+
+\paragraph{Elastic energy.}
+For such an immersion, the elastic energy remains well-defined
+as an integral over the parameterized curve:
+\[
+\mathcal E_{\mathrm{str}}[\gamma]
+=
+\int_\gamma
+\left(
+\tau+\frac{\kappa_b}{2}\kappa^2
+\right)\,ds.
+\]
+At a double point \(p=\gamma(s_1)=\gamma(s_2)\), curvature is
+evaluated separately along the two parameterized branches. Since
+an isolated crossing has zero arclength measure, it contributes
+no additional point energy to this local functional. A separate
+crossing interaction would have to be introduced explicitly if
+the model is intended to assign energy to the intersection itself.
+
+\paragraph{Gravitational field and multipoles.}
+The effective line density and gravitational potential may likewise
+be defined by integration over the parameterized curve:
+\[
+\Phi_\gamma(\mathbf{x})
+=
+-G\int_\gamma
+\frac{\lambda_{\mathrm{eff}}(s)}
+{|\mathbf{x}-\gamma(s)|}\,ds,
+\qquad
+\lambda_{\mathrm{eff}}(s)
+=
+\frac{\varepsilon_{\mathrm{str}}(s)}{c^2}.
+\]
+At a self-intersection, both branches contribute to the source
+integral. The intersection does not, by itself, introduce an
+additional point mass. The monopole and higher multipole moments
+therefore remain definable by the same parameterwise integrals,
+provided the effective density is specified along each branch.
+
+A distinction is necessary when evaluating the field on the string
+itself. The idealization of the string as a source of zero thickness
+can produce singular self-field expressions, including near
+self-intersections. A calculation of gravitational self-force
+therefore requires an appropriate regularization or a formalism
+designed to handle the string's own gravitational backreaction.
+Such issues arise in the relativistic cosmic-string literature,
+including work that treats loops with self-intersections
+\cite{ChernoffFlanaganWardell2019StringBackreaction}.
+
+\paragraph{Consequences for coupled evolution.}
+Allowing self-intersections changes the admissible configuration
+space for the string, but does not by itself change the definition
+of the brane flow set \(\mathcal F_{\mathfrak B}\). The coupled
+energy
+\[
+\mathcal J[\gamma,\iota]
+=
+\mathcal E_{\mathrm{str}}[\gamma]
++
+\mathcal E_{\mathrm{br}}[\iota]
++
+\mathcal E_{\mathrm{int}}[\gamma,\iota]
+\]
+can be considered on a suitable space of immersed loops and
+admissible brane embeddings, provided its constituent terms are
+well-defined there. A gradient-flow model would then describe
+evolution within this enlarged configuration space, subject to
+the regularity and existence assumptions required for the flow.
+
+Geometric self-intersection must, however, be distinguished from
+physical intercommutation. In cosmic-string models, intersecting
+segments may reconnect, producing different loop configurations
+or fragmenting a parent loop into daughter loops
+\cite{CasperAllen1995RealisticLoops,Thompson1988CosmicStringDynamics,Vachaspati1989SelfIntersections}. Such a transition changes the
+string's connectivity and cannot be specified by a smooth
+single-loop gradient flow alone. To include it, the model would
+need an additional reconnection rule and a prescription for
+updating the configuration and its energy.
+
+These distinctions are also important for interpreting gravitational
+radiation. Self-intersecting loop trajectories have been studied
+in calculations of gravitational radiation spectra
+\cite{StormScherrer2024GVLoops}, while relativistic treatments
+of gravitational backreaction examine the forces generated by
+the string's own field
+\cite{ChernoffFlanaganWardell2019StringBackreaction}. These works
+provide relevant physical precedents, but they concern cosmic
+strings and their gravitational radiation or backreaction; they
+do not establish that the elastic-loop model proposed here is
+itself a fundamental graviton model.
+
+Accordingly, the results derived for embedded loops remain the
+baseline case of this paper. Self-intersecting immersions provide
+a controlled extension, while branch interactions, self-force
+regularization, and topology-changing reconnection are additional
+modeling questions to be addressed separately.
+
+\appendix
+```latex
+\subsection{Numerical Example}
+\label{subsec:numerical-example}
+
+We now evaluate the elastic energy and gravitational multipole
+moments for the asymmetric loop of
+Figure~\ref{fig:asymmetric-closed-loop}. This example illustrates
+how the shape parameters affect the energy distribution and the
+resulting effective gravitational field.
+
+\paragraph{Dimensionless energy.}
+The reference circle in our geometric model has normalized radius
+one. Let \(R_0\) denote its physical radius and introduce the
+dimensionless bending parameter
+\[
+\beta=\frac{\kappa_b}{\tau R_0^2}.
+\]
+Writing \(\widehat{\kappa}=R_0\kappa\) and
+\(d\widehat{s}=ds/R_0\), the dimensionless energy of hemisphere
+\(I_i\) is
+\[
+\widehat{E}_i
+\coloneq \frac{E_i}{\tau R_0}
+=
+\int_{I_i}
+\left(1+\frac{\beta}{2}\widehat{\kappa}^2\right)
+\sqrt{r^2+(r')^2}\,d\theta.
+\]
+For this illustrative calculation, we set \(\beta=1\).
+This is a normalized modeling choice, not an empirically determined
+material parameter.
+
+We use the shape parameters
+\[
+(A_1,N_1,A_2,N_2)=(0.8,2,0.45,4),
+\]
+as in Figure~\ref{fig:asymmetric-closed-loop}. Numerical
+integration gives the following dimensionless contributions.
+Here \(\widehat{L}_i\) denotes the length contribution and
+\[
+\widehat{B}_i
+=
+\frac12\int_{I_i}\widehat{\kappa}^{\,2}\,d\widehat{s}
+\]
+denotes the bending contribution.
+
+\begin{center}
+	\begin{tabular}{lrrr}
+		\toprule
+		Hemisphere & \(\widehat{L}_i\) & \(\widehat{B}_i\)
+		& \(\widehat{E}_i\) \\
+		\midrule
+		\(I_1\) & \(5.7180\) & \(17.2018\) & \(22.9198\) \\
+		\(I_2\) & \(5.6733\) & \(84.0956\) & \(89.7689\) \\
+		\midrule
+		Total & \(11.3913\) & \(101.2974\) & \(112.6887\) \\
+		\bottomrule
+	\end{tabular}
+\end{center}
+
+Consequently, the normalized energy asymmetry is
+\[
+\mathcal{A}_E
+=
+\frac{\widehat{E}_2-\widehat{E}_1}
+{\widehat{E}_1+\widehat{E}_2}
+\approx 0.5932.
+\]
+Thus, approximately \(59.3\%\) is the signed normalized
+difference between the two hemispheric energy contributions.
+In this example, the second hemisphere contributes substantially
+more energy despite having the smaller peak amplitude.
+
+The length contributions are nearly equal; the difference is
+dominated by the bending energy. This illustrates that peak
+spacing, and not merely peak height, can strongly influence the
+elastic energy distribution. The numerical result depends on the
+chosen bending parameter \(\beta\) and should not be interpreted
+as a universal relation between shape asymmetry and energy.
+
+\paragraph{Effective mass and multipole moments.}
+We next calculate the moments relative to the fixed origin at
+the center of the reference circle. Let
+\(\widehat{\mathbf y}=\mathbf y/R_0\) and define the
+dimensionless energy-density factor
+\[
+\widehat{\varepsilon}(\theta)
+=
+1+\frac12\widehat{\kappa}(\theta)^2.
+\]
+The dimensionless monopole, dipole, and quadrupole are
+\[
+\widehat{M}
+=
+\oint_\gamma
+\widehat{\varepsilon}\,d\widehat{s},
+\qquad
+\widehat{\mathbf d}
+=
+\oint_\gamma
+\widehat{\varepsilon}\,
+\widehat{\mathbf y}\,d\widehat{s},
+\]
+and
+\[
+\widehat{Q}_{ij}
+=
+\oint_\gamma
+\widehat{\varepsilon}
+\left(
+3\widehat{y}_i\widehat{y}_j
+-|\widehat{\mathbf y}|^2\delta_{ij}
+\right)d\widehat{s}.
+\]
+The dimensional moments are recovered through
+\[
+M_{\mathrm{eff}}
+=\frac{\tau R_0}{c^2}\widehat{M},
+\qquad
+\mathbf d
+=\frac{\tau R_0^2}{c^2}\widehat{\mathbf d},
+\qquad
+Q_{ij}
+=\frac{\tau R_0^3}{c^2}\widehat{Q}_{ij}.
+\]
+Because \(\beta=1\), the dimensionless monopole equals the
+dimensionless total energy. Numerically, we obtain
+\[
+\widehat{M}\approx112.6887,
+\qquad
+\widehat{\mathbf d}
+\approx
+\begin{pmatrix}
+	0\\
+	-46.1093\\
+	0
+\end{pmatrix},
+\]
+and
+\[
+\widehat{Q}
+\approx
+\begin{pmatrix}
+	79.7427 & 0 & 0\\
+	0 & 79.7427 & 0\\
+	0 & 0 & -159.4854
+\end{pmatrix}.
+\]
+The quadrupole tensor is trace-free, as required by its definition.
+The vanishing \(x\)-component of the dipole follows from the
+reflection symmetry of this particular loop about the vertical
+axis. Its negative \(y\)-component indicates that the effective
+energy centroid lies below the reference origin. This is an
+origin-dependent dipole, not an intrinsic asymmetry measure
+independent of the chosen coordinates.
+
+\paragraph{Far-field potential.}
+As a final check, consider observation points
+\(\mathbf{x}_{\pm}=(0,\pm10R_0,0)\). The maximum loop radius is
+\(1.8R_0\), so these points lie outside the immediate source
+region. Using the monopole, dipole, and quadrupole terms gives
+\[
+\begin{aligned}
+	\Phi(\mathbf{x}_+)
+	&\approx
+	-\frac{G\tau}{c^2}
+	\left(
+	\frac{\widehat{M}}{10}
+	+\frac{\widehat{d}_y}{10^2}
+	+\frac{\widehat{Q}_{yy}}{2\cdot10^3}
+	\right)\\
+	&\approx
+	-\frac{G\tau}{c^2}(10.8476),
+	\\[6pt]
+	\Phi(\mathbf{x}_-)
+	&\approx
+	-\frac{G\tau}{c^2}
+	\left(
+	\frac{\widehat{M}}{10}
+	-\frac{\widehat{d}_y}{10^2}
+	+\frac{\widehat{Q}_{yy}}{2\cdot10^3}
+	\right)\\
+	&\approx
+	-\frac{G\tau}{c^2}(11.7698).
+\end{aligned}
+\]
+Direct numerical evaluation of the potential integral
+\eqref{eq:newtonian-loop-potential}, using the same normalized
+source density, gives respectively
+\[
+\Phi(\mathbf{x}_+)
+\approx-\frac{G\tau}{c^2}(10.8462),
+\qquad
+\Phi(\mathbf{x}_-)
+\approx-\frac{G\tau}{c^2}(11.7715).
+\]
+The close agreement illustrates the accuracy of the first three
+multipole terms for these observation points. The potential is
+more negative on the negative \(y\)-axis, consistently with the
+downward displacement of the effective energy centroid.
+
+This example demonstrates, within the stated effective Newtonian
+model, how a chosen loop geometry determines its elastic energy,
+effective mass moments, and approximate far-field potential.
+It does not establish that geometric asymmetry itself generates
+gravity: the field calculation depends on the assumed effective
+line-mass density, and the numerical results depend on the
+dimensionless bending parameter.
+
+
+\begin{thebibliography}{9}
+\bibitem{Adams}
+J.~F.~Adams. \emph{Infinite Loop Spaces}. Hermann Weyl Lectures, The Institute for Advanced Study (AM-90). (1978).
+
+\bibitem{Atai}
+A.~A.~Atai. and D.~J.~Steigmann \emph{Coupled Deformations of Elastic Curves and Surfaces}. \emph{International Journal of Solids and Structures}, Vol.~35, No.~16, pp.~1915--1952. (1998).
+
+\bibitem{CasperAllen1995RealisticLoops}
+P.~Casper and B.~Allen.
+\emph{Gravitational Radiation from Realistic Cosmic String Loops}.
+\emph{Physical Review D}, Vol.~52, No.~8, pp.~4337--4348.
+\href{https://doi.org/10.1103/PhysRevD.52.4337}
+{doi:10.1103/PhysRevD.52.4337}. (1995).
+
+\bibitem{ChernoffFlanaganWardell2019StringBackreaction}
+D.~F.~Chernoff, \'{E}.~\'{E}.~Flanagan, and B.~Wardell. \emph{Gravitational Backreaction on a Cosmic String: Formalism}. \emph{Physical Review D}, Vol.~99, 084036. \href{https://doi.org/10.1103/PhysRevD.99.084036}{doi:10.1103/PhysRevD.99.084036}. (2019).
+
+\bibitem{DziukKuwertSchaetzle2002}
+G.~Dziuk, E.~Kuwert, and R.~Sch\"atzle.
+\emph{Evolution of Elastic Curves in $\mathbb{R}^n$: Existence and Computation}.
+\emph{SIAM Journal on Mathematical Analysis}, Vol.~33, No.~5, pp.~1228--1245.
+\href{https://doi.org/10.1137/S0036141001383709}{doi:10.1137/S0036141001383709}.
+(2002).
+
+\bibitem{Green}
+M.~B.~Green, J.~H.~Schwarz, and E.~Witten. \emph{Superstring Theory (Vol.~1 \& 2)}. Cambridge University Press, Cambridge. (1987).
+
+\bibitem{PoissonWill2014Gravity}
+E.~Poisson and C.~M.~Will. \emph{Gravity: Newtonian, Post-Newtonian, Relativistic}. Cambridge University Press, Cambridge. \href{https://doi.org/10.1017/CBO9781139507486}{doi:10.1017/CBO9781139507486}. (2014).
+
+\bibitem{Polchinski}
+J.~Polchinski. \emph{String Theory (Vol.~1 \& 2)}. Cambridge University Press, Cambridge. (1998).
+
+\bibitem{Schreiber}
+U.~Schreiber. \emph{From Loop Space Mechanics to Nonabelian Strings}. PhD thesis. \href{https://arxiv.org/abs/hep-th/0509163}{arXiv:hep-th/0509163}. (2005).
+
+\bibitem{StormScherrer2024GVLoops}
+S.~D.~Storm and R.~J.~Scherrer.
+\emph{Gravitational Radiation Power Spectrum of Garfinkle--Vachaspati Cosmic String Loops}.
+\emph{Physical Review D}, Vol.~110, 083531.
+\href{https://doi.org/10.1103/PhysRevD.110.083531}
+{doi:10.1103/PhysRevD.110.083531}. (2024).
+
+\bibitem{Thompson1988CosmicStringDynamics}
+C.~Thompson. \emph{Dynamics of Cosmic String}.
+\emph{Physical Review D}, Vol.~37, pp.~283--297.
+\href{https://doi.org/10.1103/PhysRevD.37.283}
+{doi:10.1103/PhysRevD.37.283}. (1988).
+
+\bibitem{Thorne1980MultipoleRadiation}
+K.~S.~Thorne. \emph{Multipole Expansions of Gravitational Radiation}. \emph{Reviews of Modern Physics}, Vol.~52, No.~2, pp.~299--339. \href{https://doi.org/10.1103/RevModPhys.52.299}{doi:10.1103/RevModPhys.52.299}. (1980).
+
+\bibitem{Vachaspati1989SelfIntersections}
+T.~Vachaspati. \emph{Cosmic-String Loop Self-Intersections and Intercommuting}.
+\emph{Physical Review D}, Vol.~39, pp.~1768--1771.
+\href{https://doi.org/10.1103/PhysRevD.39.1768}
+{doi:10.1103/PhysRevD.39.1768}. (1989).
+
+\bibitem{ZhangEtAl}
+S.~Zhang, L.~Younes, J.~Zweck, and J.~T.~Ratnanather. \emph{Diffeomorphic Surface Flows: A Novel Method of Surface Evolution}. \emph{SIAM Journal on Applied Mathematics}, Vol.~68, No.~3, pp.~806--824. (2008).
+
+\bibitem{Zwiebach}
+B.~Zwiebach. \emph{A First Course in String Theory}. Cambridge University Press, Cambridge. (2004).
+
+\end{thebibliography}
+
+
+\end{document}
